@@ -10,7 +10,10 @@ export async function POST(request) {
     const [user] = await db.query(checkUserSql, [email, password]);
 
     if (user.length > 0) {
-      return NextResponse.json({ success: true, user: user[0] });
+      return NextResponse.json({
+        success: true,
+        user: user[0], 
+      });
     } else {
       return NextResponse.json({ success: false, message: "Invalid email or password." });
     }

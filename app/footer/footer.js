@@ -5,12 +5,7 @@ import Link from 'next/link';
 import { FaInstagram, FaYoutube, FaDiscord, FaFacebook } from 'react-icons/fa';
 
 export default function Footer() {
-  useEffect(() => {
-    fetch("/api/logs", {
-      method: "POST",
-    });
-  }, []);
-  return (
+   return (
     <footer className="bg-gray-900 shadow w-full py-8 relative z-100">
       <div className="w-full mx-auto max-w-screen-xl px-4 md:flex md:items-center md:justify-between">
         <span className="text-sm text-gray-400 sm:text-center">

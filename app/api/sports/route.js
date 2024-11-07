@@ -1,34 +1,25 @@
-import { createConnection } from "@/lib/db.js";
-import { NextResponse } from "next/server";
+import { createConnection } from '@/lib/db';
+import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(req) {
+  const connection = await createConnection();
+
   try {
-    const db = await createConnection();
-    const selectSportsSql = "SELECT * FROM sports";
-    const [sports] = await db.query(selectSportsSql);
-    
-    return NextResponse.json(sports);
+    const [rows] = await connection.execute('SELECT * FROM sport');
+    return NextResponse.json(rows, { status: 200 });
   } catch (error) {
-    console.log(error);
-    return NextResponse.json({ error: error.message });
+    return NextResponse.json({ error: 'Failed to fetch sports' }, { status: 500 });
   }
 }
 
-export async function POST(request) {
+export async function POST(req) {
+  const { name, category } = await req.json();
+  const connection = await createConnection();
+
   try {
-    const db = await createConnection();
-    const payload = await request.json();
-
-    const insertSportsSql = `
-      INSERT INTO sports (name, rating, playerCount)
-      VALUES (?, ?, ?);
-    `;
-    
-    const result = await db.query(insertSportsSql, [payload.name, payload.rating, payload.playerCount]);
-
-    return NextResponse.json({ result, success: true });
+    await connection.execute('INSERT INTO sport (name, category) VALUES (?, ?)', [name, category]);
+    return NextResponse.json({ message: 'Sport created successfully' }, { status: 201 });
   } catch (error) {
-    console.log(error);
-    return NextResponse.json({ error: error.message });
+    return NextResponse.json({ error: 'Failed to create sport' }, { status: 500 });
   }
 }

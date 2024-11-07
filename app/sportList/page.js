@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useEffect, useState, useRef } from 'react';
 import Navbar from '../navbar/navbar';
 import Footer from '../footer/footer';
@@ -9,6 +9,21 @@ const Dashboard = () => {
   const [sports, setSports] = useState([]);
   const slideInterval = useRef(null);
 
+  const getSportIcon = (category) => {
+    switch (category.toLowerCase()) {
+      case 'football':
+        return <IoFootball />;
+      case 'basketball':
+        return <IoBasketball />;
+      case 'baseball':
+        return <IoBaseball />;
+      case 'tennis':
+        return <IoTennisball />;
+      default:
+        return <IoFootball />;
+    }
+  };
+  
   useEffect(() => {
     const fetchSports = async () => {
       const response = await fetch('/api/sports');
@@ -37,26 +52,11 @@ const Dashboard = () => {
   };
 
   const slides = sports.map((sport, index) => ({
-    src: sport.image || '/default.jpg', 
+    src: '/default.jpg', // Fallback image as there is no image data in the response
     name: sport.name,
-    icon: getSportIcon(sport.name), 
-    info: `${sport.name} - Rating: ${sport.rating}/10, Player Count: ${sport.playerCount}`
+    icon: getSportIcon(sport.category), // Updated to use category for icon
+    info: `Sport: ${sport.name}, Category: ${sport.category}`
   }));
-
-  const getSportIcon = (sportName) => {
-    switch (sportName.toLowerCase()) {
-      case 'football':
-        return <IoFootball />;
-      case 'basketball':
-        return <IoBasketball />;
-      case 'baseball':
-        return <IoBaseball />;
-      case 'tennis':
-        return <IoTennisball />;
-      default:
-        return <IoFootball />;
-    }
-  };
 
   return (
     <div>

@@ -36,38 +36,48 @@ const LoginSignup = () => {
     const endpoint = isSignUp ? "/api/signup" : "/api/login";
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-
+  
     if (isSignUp) {
       if (!validatePassword(data.password)) {
         setErrorMessage("Password must be at least 8 characters long and contain both letters and numbers.");
         return;
       }
-
+  
       if (data.password !== data.confirmPassword) {
         setErrorMessage("Passwords do not match.");
         return;
       }
     }
-
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      localStorage.removeItem("userInfo");
-      localStorage.setItem("userInfo", JSON.stringify(result.user));
-      router.push("/user");
-    } else {
-      setErrorMessage(result.message || "An error occurred. Please try again.");
+  
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+  
+      const result = await response.json();
+      console.log(result);
+      if (result.success) {
+        const loginInfo = {
+          email: data.email,
+          userId: result.user.id,
+        };
+        console.log(loginInfo);
+        localStorage.setItem("loginInfo", JSON.stringify(loginInfo));
+        
+        router.push("/user");
+      } else {
+        setErrorMessage(result.message || "An error occurred. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error in login/signup process:", err);
+      setErrorMessage("An error occurred. Please try again.");
     }
   };
-
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black text-white">
       <ul className="circles">

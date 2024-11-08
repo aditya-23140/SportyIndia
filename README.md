@@ -33,7 +33,7 @@ To run the Sporty India application locally, follow these steps:
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/Itachi1905/Sporty_India.git
+   git clone https://github.com/WhoamiI00/SportyIndia.git
    cd Sporty_India
 
 2. **Install Dependencies:**
@@ -97,4 +97,4 @@ We welcome contributions to the Sporty India project! If you'd like to contribut
 Thank you for your contributions!
 
 ## Team Members : Ankit, AdityaK, AdityaS, Ayushman, Bhanu
-github Link -> https://github.com/Itachi1905/Sporty_India.git
+github Link -> https://github.com/WhoamiI00/SportyIndia.git

@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/app/navbar/navbar';
 import Footer from '@/app/footer/footer';
+import { useRouter } from 'next/navigation';
 
 export default function Form() {
   const [formData, setFormData] = useState({
@@ -12,12 +13,23 @@ export default function Form() {
     performance: '',
     photo: null
   });
+  const router = useRouter();
+  const [athleteId, setAthleteId] = useState(null);
+
+  // Retrieve athleteId from localStorage
+  useEffect(() => {
+    const storedUser = localStorage.getItem('loginInfo');
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setAthleteId(parsedUser.userId); // Assuming userId is stored in loginInfo
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -28,9 +40,9 @@ export default function Form() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData(prevState => ({
+        setFormData((prevState) => ({
           ...prevState,
-          photo: reader.result.split(',')[1]
+          photo: reader.result.split(',')[1], // Get base64 encoded image data
         }));
       };
       reader.readAsDataURL(file);
@@ -39,30 +51,34 @@ export default function Form() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    const athleteID = 1;
+
+    if (!athleteId) {
+      alert('Athlete ID is missing!');
+      return;
+    }
 
     const formDataToSubmit = {
       sport: formData.sport,
       date: formData.date,
       match: formData.match,
       performance: formData.performance,
-      photo: formData.photo || null
+      photo: formData.photo || null,
     };
 
     try {
-      const response = await fetch(`/api/${athleteID}`, {
+      const response = await fetch(`/api/${athleteId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formDataToSubmit)
+        body: JSON.stringify(formDataToSubmit),
       });
 
       const result = await response.json();
 
       if (result.success) {
         alert('Submission successful!');
+        router.push('/user'); // Redirect to user profile page
       } else {
         alert('Error: ' + result.error);
       }

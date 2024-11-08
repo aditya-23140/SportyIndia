@@ -1,4 +1,5 @@
 'use client'
+
 import React, { useEffect, useState } from "react";
 import Navbar from "../navbar/navbar";
 import Footer from "../footer/footer";
@@ -11,23 +12,46 @@ const User = () => {
   const [achievements, setAchievements] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [recentUploads, setRecentUploads] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
+
+  const getYouTubeEmbedUrl = (url) => {
+    const youtubeRegex =
+      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/]+\/[^\/]+\/|(?:v|e(?:mbed)?)\/|(?:v=|e(?:mbed)?\/))([a-zA-Z0-9_-]+)|youtu\.be\/([a-zA-Z0-9_-]+))/;
+
+    const match = url.match(youtubeRegex);
+
+    if (match) {
+      const videoId = match[1] || match[2];
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+
+    return null;
+  };
 
   const fetchUserData = async (userId) => {
     try {
       const response = await fetch(`/api/${userId}`);
       const data = await response.json();
 
-      if (data.athlete) {
-        setAthlete(data.athlete);
-        setAchievements(data.athlete.Achievements ? data.athlete.Achievements.split(",") : []);
-      }
+      if (data.success) {
+        if (data.athlete) {
+          setAthlete(data.athlete);
+          setAchievements(data.athlete.Achievements ? data.athlete.Achievements.split(",") : []);
+        }
 
-      if (data.sports) {
-        setSports(data.sports);
-      }
+        if (data.sports) {
+          setSports(data.sports);
+        }
 
-      if (data.events) {
-        setEvents(data.events);
+        if (data.events) {
+          setEvents(data.events);
+        }
+
+        if (data.videos) {
+          setRecentUploads(data.videos.map(video => video.url));
+        }
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -49,8 +73,34 @@ const User = () => {
   }, []);
 
   const bufferToBase64 = (buffer) => {
-    console.log(`data:image/png;base64,${buffer.toString('base64')}`)
     return `data:image/png;base64,${buffer.toString('base64')}`;
+  };
+
+  const handleAddUrl = async () => {
+    if (videoUrl) {
+      try {
+        const response = await fetch(`/api/${user.userId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: "add_video",
+            videoUrl: videoUrl,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          setRecentUploads([...recentUploads, videoUrl]);
+          setVideoUrl("");
+          setIsModalOpen(false);
+        } else {
+          console.error(data.error);
+        }
+      } catch (error) {
+        console.error("Error adding video URL:", error);
+      }
+    }
   };
 
   if (loading) {
@@ -66,11 +116,43 @@ const User = () => {
       <Navbar />
       <main className="flex flex-col md:flex-row p-6 space-x-0 md:space-x-6">
         <div className="w-full md:w-1/4 bg-gray-800 p-4 rounded-lg shadow-lg mb-6 md:mb-0">
-          <h2 className="text-xl font-semibold mb-4">Recent Data</h2>
+          <h2 className="text-xl font-semibold mb-4">Recent Uploads</h2>
           <ul className="space-y-4">
-            <li className="p-4 bg-gray-700 rounded-lg">Recent Upload 1</li>
-            <li className="p-4 bg-gray-700 rounded-lg">Recent Upload 2</li>
+            {recentUploads.length > 0 ? (
+              recentUploads.map((upload, index) => {
+                const youtubeEmbedUrl = getYouTubeEmbedUrl(upload);
+                return (
+                  <li key={index} className="p-4 bg-gray-700 rounded-lg">
+                    {youtubeEmbedUrl ? (
+                      <div className="relative" style={{ paddingBottom: '56.25%' }}>
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          src={youtubeEmbedUrl}
+                          title="YouTube video player"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          referrerPolicy="strict-origin-when-cross-origin"
+                          allowFullScreen
+                          className="absolute top-0 left-0 w-full h-full"
+                        ></iframe>
+                      </div>
+                    ) : (
+                      <p className="text-gray-400">Invalid YouTube URL</p>
+                    )}
+                  </li>
+                );
+              })
+            ) : (
+              <p className="text-gray-400">No recent uploads found.</p>
+            )}
           </ul>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="mt-6 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-lg transition duration-200"
+          >
+            Add Video URL
+          </button>
         </div>
 
         <div className="w-full md:w-3/4 bg-gray-800 p-6 rounded-lg shadow-lg">
@@ -84,7 +166,7 @@ const User = () => {
               <h1 className="text-2xl font-bold">{athlete ? athlete.Name : "Loading..."}</h1>
               <p className="text-gray-400">{athlete ? athlete.Address : ""}</p>
               <p className="text-gray-400">{athlete ? athlete.Email : ""}</p>
-              <p className="text-gray-400"><MdAddCall className="inline mr-2" />-&nbsp;&nbsp;{athlete ? athlete.ContactNum : "Loading athlete info..."}</p>
+              <p className="text-gray-400"><MdAddCall className="inline mr-2" />{athlete ? athlete.ContactNum : "Loading athlete info..."}</p>
             </div>
           </div>
 
@@ -100,7 +182,7 @@ const User = () => {
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-400">None</p>
+              <p className="text-gray-400">No sports registered.</p>
             )}
             <button className="mt-6 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-lg transition duration-200">
               <a href="/user/update">Update Plays</a>
@@ -162,6 +244,35 @@ const User = () => {
         </div>
       </main>
       <Footer />
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-80">
+            <h3 className="text-xl font-semibold mb-4">Enter Video URL</h3>
+            <input
+              type="url"
+              className="w-full p-2 mb-4 bg-gray-700 text-white rounded-lg"
+              placeholder="https://example.com/video"
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+            />
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddUrl}
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg"
+              >
+                Add URL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

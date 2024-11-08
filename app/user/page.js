@@ -6,7 +6,8 @@ import { MdAddCall, MdEditNote } from "react-icons/md";
 import Link from "next/link";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { CoachList, AchievementList } from "../../components/Lists";
+import { CoachList, AchievementList, SportList, ActivityList, UploadList } from "../../components/Lists";
+import { FaInfoCircle } from "react-icons/fa";
 
 const User = () => {
   const [user, setUser] = useState(null);
@@ -20,28 +21,20 @@ const User = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
   const [newCoach, setNewCoach] = useState("");
+  const [newSport, setNewSport] = useState("");
   const [newAchievement, setNewAchievement] = useState("");
   const [isAddCoachModalOpen, setIsAddCoachModalOpen] = useState(false);
   const [isAddAchievementModalOpen, setIsAddAchievementModalOpen] = useState(false);
-  
-  // State for athlete update modal
+  const [isAddSportModalOpen, setIsAddSportModalOpen] = useState(false);
+  const [isCoachModalOpen, setIsCoachModalOpen] = useState(false);
+  const [specialization, setSpecialization] = useState('');
+
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [updatedName, setUpdatedName] = useState('');
   const [updatedDOB, setUpdatedDOB] = useState('');
   const [updatedContactNum, setUpdatedContactNum] = useState('');
   const [updatedEmail, setUpdatedEmail] = useState('');
   const [updatedAddress, setUpdatedAddress] = useState('');
-
-  const getYouTubeEmbedUrl = (url) => {
-    const youtubeRegex =
-      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/]+\/[^\/]+\/|(?:v|e(?:mbed)?)\/|(?:v=|e(?:mbed)?\/))([a-zA-Z0-9_-]+)|youtu\.be\/([a-zA-Z0-9_-]+))/;
-    const match = url.match(youtubeRegex);
-    if (match) {
-      const videoId = match[1] || match[2];
-      return `https://www.youtube.com/embed/${videoId}`;
-    }
-    return null;
-  };
 
   const fetchUserData = async (userId) => {
     try {
@@ -89,7 +82,7 @@ const User = () => {
       email: updatedEmail,
       address: updatedAddress,
     };
-    
+
     try {
       const response = await fetch(`/api/${user.userId}`, {
         method: 'PUT',
@@ -101,17 +94,14 @@ const User = () => {
       if (data.success) {
         setAthlete({ ...athlete, ...updatedData });
         toast.success("Athlete information updated successfully!");
-        setIsUpdateModalOpen(false);  // Close the modal
+        setIsUpdateModalOpen(false);
       } else {
         toast.error(data.error || "Failed to update athlete information");
       }
+      window.location.reload();
     } catch (error) {
       console.error("Error updating athlete information:", error);
     }
-  };
-
-  const bufferToBase64 = (buffer) => {
-    return `data:image/png;base64,${buffer.toString('base64')}`;
   };
 
   const handleAddUrl = async () => {
@@ -183,6 +173,87 @@ const User = () => {
     }
   };
 
+  const handleDelete = async (action, item) => {
+    if (!action || !item) return;
+
+    try {
+      const response = await fetch(`/api/${user.userId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, ...item }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        if (action === 'delete_video') {
+          setRecentUploads(recentUploads.filter(url => url !== item.videoUrl));
+        } else if (action === 'delete_coach') {
+          setCoaches(coaches.filter(coach => coach !== item.coachName));
+        } else if (action === 'delete_achievement') {
+          setAchievements(achievements.filter(achievement => achievement !== item.achievement));
+        } else if (action === 'delete_sport') {
+          setSports(sports.filter(sport => sport !== item.sport));
+        } else if (action === 'delete_event') {
+          window.location.reload();
+          setEvents(events.filter(event => event !== item.EventName));
+        }
+        toast.success(`${action.replace("delete_", "")} deleted successfully!`);
+      } else {
+        toast.error(data.error || "Failed to delete item");
+      }
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      toast.error("An error occurred while deleting.");
+    }
+  };
+
+  const handleAddSport = async () => {
+    if (newSport) {
+      try {
+        const response = await fetch(`/api/${user.userId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: "add_sport", sport: newSport }),
+        });
+        const data = await response.json();
+        if (data.success) {
+          setSports([...sports, newSport]);
+          setNewSport("");
+          setIsAddSportModalOpen(false);
+          toast.success("Sport added successfully!");
+        } else {
+          console.error(data.error);
+        }
+        window.location.reload();
+      } catch (error) {
+        console.error("Error adding Sport:", error);
+      }
+    }
+  };
+
+  const handleAddCoachWithSpecialization = async () => {
+    if (specialization) {
+      try {
+        const response = await fetch(`/api/${user.userId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: "be_coach", specialization }),
+        });
+        const data = await response.json();
+        if (data.success) {
+          // setCoaches([...coaches, { specialization }]);
+          setSpecialization("");
+          setIsCoachModalOpen(false);
+          toast.success(`You are now a Coach with ${specialization} specialization!`);
+        } else {
+          console.error(data.error);
+        }
+      } catch (error) {
+        console.error("Error adding coach with specialization:", error);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center bg-gradient-to-b from-black to-gray-900 text-white">
@@ -195,48 +266,20 @@ const User = () => {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-black to-gray-900 text-white">
       <Navbar />
       <main className="flex flex-col md:flex-row p-6 space-x-0 md:space-x-6">
-        <div className="w-full md:w-1/4 bg-gray-800 p-4 rounded-lg shadow-lg mb-6 md:mb-0">
-          <h2 className="text-xl font-semibold mb-4">Recent Uploads</h2>
-          <ul className="space-y-4">
-            {recentUploads.length > 0 ? (
-              recentUploads.map((upload, index) => {
-                const youtubeEmbedUrl = getYouTubeEmbedUrl(upload);
-                return (
-                  <li key={index} className="p-4 bg-gray-700 rounded-lg">
-                    {youtubeEmbedUrl ? (
-                      <div className="relative" style={{ paddingBottom: '56.25%' }}>
-                        <iframe
-                          width="100%"
-                          height="100%"
-                          src={youtubeEmbedUrl}
-                          title="YouTube video player"
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                          referrerPolicy="strict-origin-when-cross-origin"
-                          allowFullScreen
-                          className="absolute top-0 left-0 w-full h-full"
-                        ></iframe>
-                      </div>
-                    ) : (
-                      <p className="text-gray-400">Invalid YouTube URL</p>
-                    )}
-                  </li>
-                );
-              })
-            ) : (
-              <p className="text-gray-400">No recent uploads found.</p>
-            )}
-          </ul>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="mt-6 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-lg transition duration-200"
-          >
-            Add Video URL
-          </button>
-        </div>
+
+        <UploadList
+          recentUploads={recentUploads}
+          isModalOpen={isModalOpen}
+          setIsModalOpen={setIsModalOpen}
+          videoUrl={videoUrl}
+          setVideoUrl={setVideoUrl}
+          handleAddUrl={handleAddUrl}
+          handleDelete={handleDelete}
+        />
+
 
         <div className="w-full md:w-3/4 bg-gray-800 p-6 rounded-lg shadow-lg">
-          <div className="flex items-center mb-6">
+          <div className="flex items-center mb-6 relative">
             <img
               src="/logo.png"
               alt="Profile"
@@ -247,7 +290,11 @@ const User = () => {
                 {athlete ? athlete.Name : "Loading..."}&nbsp;&nbsp;
                 <MdEditNote
                   className="inline scale-[1.5] cursor-pointer"
-                  onClick={() => setIsUpdateModalOpen(true)} // Open the update modal on click
+                  onClick={() => setIsUpdateModalOpen(true)}
+                />
+                <FaInfoCircle
+                  className="inline scale-[1.1] cursor-pointer absolute right-0"
+                  onClick={() => setIsCoachModalOpen(true)}
                 />
               </h1>
               <p className="text-gray-400">{athlete ? athlete.Address : ""}</p>
@@ -259,7 +306,6 @@ const User = () => {
             </div>
           </div>
 
-          {/* Reuse CoachList component */}
           <CoachList
             coaches={coaches}
             isAddCoachModalOpen={isAddCoachModalOpen}
@@ -267,9 +313,9 @@ const User = () => {
             newCoach={newCoach}
             setNewCoach={setNewCoach}
             handleAddCoach={handleAddCoach}
+            handleDelete={handleDelete}
           />
 
-          {/* Reuse AchievementList component */}
           <AchievementList
             achievements={achievements}
             isAddAchievementModalOpen={isAddAchievementModalOpen}
@@ -277,61 +323,30 @@ const User = () => {
             newAchievement={newAchievement}
             setNewAchievement={setNewAchievement}
             handleAddAchievement={handleAddAchievement}
+            handleDelete={handleDelete}
           />
 
-          <div>
-            <h2 className="text-2xl mb-4 flex justify-between items-center">
-              <div className="font-semibold">Activity</div>
-              <Link href="/user/update">
-                <button
-                  className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg scale-[0.8]"
-                >
-                  Update Activity
-                </button>
-              </Link>
-            </h2>
-            <div className="p-4 bg-gray-700 rounded-lg">
-              {events.length > 0 ? (
-                <ul className="space-y-4">
-                  {events.map((event, index) => (
-                    <li key={index} className="p-4 bg-gray-600 rounded-lg">
-                      <h3 className="font-semibold">Event Name - {event.EventName}</h3>
-                      <p className="text-gray-400">
-                        Date - {new Date(event.Date).toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
-                      </p>
-                      <p className="text-gray-300">Venue - {event.Venue}</p>
-                      <p className="text-gray-200">Description - {event.Description}</p>
-                      <p className="text-gray-200">Experience - {event.performance}</p>
+          <SportList
+            sports={sports}
+            handleDelete={handleDelete}
+            handleAddSport={handleAddSport}
+            isAddSportModalOpen={isAddSportModalOpen}
+            setIsAddSportModalOpen={setIsAddSportModalOpen}
+            newSport={newSport}
+            setNewSport={setNewSport}
+          />
 
-                      {event.AthleteImage ? (
-                        <img
-                          src={bufferToBase64(event.AthleteImage)}
-                          alt="Athlete Image"
-                          className="w-24 h-24 rounded-lg"
-                        />
-                      ) : (
-                        <p>Image not available</p>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-gray-400">No recent activity found.</p>
-              )}
-            </div>
-          </div>
+          <ActivityList
+            events={events}
+            handleDelete={handleDelete}
+          />
+
         </div>
       </main>
 
       <Footer />
       <ToastContainer theme="dark" position="top-left" />
 
-      {/* Update Athlete Modal */}
       {isUpdateModalOpen && (
         <div className="fixed inset-0 bg-gray-700 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-96">
@@ -399,34 +414,38 @@ const User = () => {
         </div>
       )}
 
-       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-80">
-            <h3 className="text-xl font-semibold mb-4">Enter Video URL</h3>
-            <input
-              type="url"
-              className="w-full p-2 mb-4 bg-gray-700 text-white rounded-lg"
-              placeholder="https://example.com/video"
-              value={videoUrl}
-              onChange={(e) => setVideoUrl(e.target.value)}
-            />
-            <div className="flex justify-end space-x-4">
+      {isCoachModalOpen && (
+        <div className="fixed inset-0 bg-gray-700 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-96">
+            <h3 className="text-2xl font-semibold mb-4">Be a Coach</h3>
+            <div className="mb-4">
+              <label className="block text-gray-400">Specialization</label>
+              <input
+                type="text"
+                value={specialization}
+                onChange={(e) => setSpecialization(e.target.value)}
+                className="w-full p-2 bg-gray-700 text-white rounded-lg"
+              />
+            </div>
+            <div className="flex justify-between">
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => setIsCoachModalOpen(false)}
                 className="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg"
               >
                 Cancel
               </button>
               <button
-                onClick={handleAddUrl}
+                onClick={handleAddCoachWithSpecialization}
                 className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg"
               >
-                Add URL
+                Add Specialization
               </button>
             </div>
           </div>
         </div>
       )}
+
+
     </div>
   );
 };

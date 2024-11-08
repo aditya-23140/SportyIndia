@@ -127,7 +127,9 @@ export async function POST(request, { params }) {
 
             return NextResponse.json({ success: true, message: "Achievement added successfully" }, { status: 200 });
         } else if (action === "add_sport") {
+            console.log(body);
             const { sport } = body;
+            console.log(sport);
 
             if (!sport) {
                 return NextResponse.json({ error: "Sport name is required" }, { status: 400 });
@@ -136,13 +138,13 @@ export async function POST(request, { params }) {
             const [sportData] = await db.query(`
                 SELECT SportID FROM sport WHERE Name = ?
             `, [sport]);
-
+            console.log(sportData);
             if (sportData.length === 0) {
                 return NextResponse.json({ error: "Sport not found" }, { status: 404 });
             }
 
             const sportID = sportData[0].SportID;
-
+            console.log(sportID);
             const [existingPlay] = await db.query(`
                 SELECT * FROM plays WHERE AthleteID = ? AND SportID = ?
             `, [id, sportID]);
@@ -156,7 +158,31 @@ export async function POST(request, { params }) {
             `, [id, sportID]);
 
             return NextResponse.json({ success: true, message: "Sport added to athlete successfully" }, { status: 200 });
-        } else {
+        } else if (action === "be_coach" ) {
+            const { specialization } = body;
+            if (!specialization) {
+                return NextResponse.json({ error: "Specialization is required" }, { status: 400 });
+            }
+            const [athleteData] = await db.query(`
+                SELECT Name, ContactNum, Email FROM athlete WHERE AthleteID = ?
+            `, [id]);
+            if (athleteData.length === 0) {
+                return NextResponse.json({ error: "Athlete not found" }, { status: 404 });
+            }
+            const { Name, ContactNum, Email } = athleteData[0];
+
+            const result = await db.query(`
+                INSERT INTO coach (Name, Specialization, ContactNum, Email) 
+                VALUES (?, ?, ?, ?)
+            `, [Name, specialization, ContactNum, Email]);
+
+            if (result.affectedRows === 0) {
+                return NextResponse.json({ error: "Failed to add the athlete as a coach" }, { status: 500 });
+            }
+
+            return NextResponse.json({ success: true, message: "Athlete is now a coach" }, { status: 200 });
+        } 
+        else {
             const { sport, date, match, performance, photo } = body;
 
             if (!sport || !date || !match || !performance) {
@@ -271,5 +297,45 @@ export async function PUT(request, { params }) {
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}
+
+export async function DELETE(request, { params }) {
+    const { id } = params;
+  
+    if (!id) {
+      return NextResponse.json({ error: "ID parameter is required" }, { status: 400 });
+    }
+  
+    try {
+      const db = await createConnection();
+      const body = await request.json();
+      const { action, videoUrl, coachName, achievement, sport, eventName } = body;
+      console.log(eventName);
+      if (action === "delete_video" && videoUrl) {
+        await db.query("DELETE FROM videos WHERE AthleteID = ? AND url = ?", [id, videoUrl]);
+        return NextResponse.json({ success: true, message: "Video deleted successfully" });
+      } else if (action === "delete_coach" && coachName) {
+        await db.query("DELETE FROM guides WHERE AthleteID = ? AND CoachID = (SELECT CoachID FROM coach WHERE Name = ?)", [id, coachName]);
+        return NextResponse.json({ success: true, message: "Coach deleted successfully" });
+      } else if (action === "delete_achievement" && achievement) {
+        await db.query("DELETE FROM achievements WHERE AthleteID = ? AND Achievement = ?", [id, achievement]);
+        return NextResponse.json({ success: true, message: "Achievement deleted successfully" });
+      } else if (action === "delete_sport" && sport) {
+        await db.query("DELETE FROM plays WHERE AthleteID = ? AND SportID = (SELECT SportID FROM sport WHERE Name = ?)", [id, sport.Name]);
+        return NextResponse.json({ success: true, message: "Sport deleted successfully" });
+      } else if (action === "delete_event" && eventName) {
+        console.log(await db.query("SELECT EventID FROM event WHERE EventName = ?", [eventName]));
+        const [event] = await db.query("SELECT EventID FROM event WHERE EventName = ?", [eventName]);
+        const eventID = event[0].EventID;
+        console.log(eventID);
+        await db.query("DELETE FROM participates WHERE AthleteID = ? AND EventID = ?", [id, eventID]);
+        return NextResponse.json({ success: true, message: "Event participation deleted successfully" });
+      } else {
+        return NextResponse.json({ error: "Invalid action or missing data" }, { status: 400 });
+      }
+    } catch (error) {
+      console.error("Error deleting:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

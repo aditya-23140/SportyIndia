@@ -1,32 +1,45 @@
-'use client'
-
+'use client';
 import React, { useEffect, useState } from "react";
 import Navbar from "../navbar/navbar";
 import Footer from "../footer/footer";
-import { MdAddCall } from "react-icons/md";
+import { MdAddCall, MdEditNote } from "react-icons/md";
+import Link from "next/link";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { CoachList, AchievementList } from "../../components/Lists";
 
 const User = () => {
   const [user, setUser] = useState(null);
   const [athlete, setAthlete] = useState(null);
   const [sports, setSports] = useState([]);
   const [achievements, setAchievements] = useState([]);
+  const [coaches, setCoaches] = useState([]);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [recentUploads, setRecentUploads] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
+  const [newCoach, setNewCoach] = useState("");
+  const [newAchievement, setNewAchievement] = useState("");
+  const [isAddCoachModalOpen, setIsAddCoachModalOpen] = useState(false);
+  const [isAddAchievementModalOpen, setIsAddAchievementModalOpen] = useState(false);
+  
+  // State for athlete update modal
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [updatedName, setUpdatedName] = useState('');
+  const [updatedDOB, setUpdatedDOB] = useState('');
+  const [updatedContactNum, setUpdatedContactNum] = useState('');
+  const [updatedEmail, setUpdatedEmail] = useState('');
+  const [updatedAddress, setUpdatedAddress] = useState('');
 
   const getYouTubeEmbedUrl = (url) => {
     const youtubeRegex =
       /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/]+\/[^\/]+\/|(?:v|e(?:mbed)?)\/|(?:v=|e(?:mbed)?\/))([a-zA-Z0-9_-]+)|youtu\.be\/([a-zA-Z0-9_-]+))/;
-
     const match = url.match(youtubeRegex);
-
     if (match) {
       const videoId = match[1] || match[2];
       return `https://www.youtube.com/embed/${videoId}`;
     }
-
     return null;
   };
 
@@ -34,21 +47,18 @@ const User = () => {
     try {
       const response = await fetch(`/api/${userId}`);
       const data = await response.json();
-
       if (data.success) {
         if (data.athlete) {
           setAthlete(data.athlete);
+          setCoaches(data.athlete.Coaches ? data.athlete.Coaches.split(",") : []);
           setAchievements(data.athlete.Achievements ? data.athlete.Achievements.split(",") : []);
         }
-
         if (data.sports) {
           setSports(data.sports);
         }
-
         if (data.events) {
           setEvents(data.events);
         }
-
         if (data.videos) {
           setRecentUploads(data.videos.map(video => video.url));
         }
@@ -62,7 +72,6 @@ const User = () => {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("loginInfo");
-
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
@@ -71,6 +80,35 @@ const User = () => {
       setLoading(false);
     }
   }, []);
+
+  const handleUpdate = async () => {
+    const updatedData = {
+      name: updatedName,
+      DOB: updatedDOB,
+      contactNum: updatedContactNum,
+      email: updatedEmail,
+      address: updatedAddress,
+    };
+    
+    try {
+      const response = await fetch(`/api/${user.userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedData),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setAthlete({ ...athlete, ...updatedData });
+        toast.success("Athlete information updated successfully!");
+        setIsUpdateModalOpen(false);  // Close the modal
+      } else {
+        toast.error(data.error || "Failed to update athlete information");
+      }
+    } catch (error) {
+      console.error("Error updating athlete information:", error);
+    }
+  };
 
   const bufferToBase64 = (buffer) => {
     return `data:image/png;base64,${buffer.toString('base64')}`;
@@ -82,23 +120,65 @@ const User = () => {
         const response = await fetch(`/api/${user.userId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: "add_video",
-            videoUrl: videoUrl,
-          }),
+          body: JSON.stringify({ action: "add_video", videoUrl: videoUrl }),
         });
-
         const data = await response.json();
-
         if (data.success) {
           setRecentUploads([...recentUploads, videoUrl]);
           setVideoUrl("");
           setIsModalOpen(false);
+          toast.success("Video added successfully!");
         } else {
           console.error(data.error);
         }
       } catch (error) {
         console.error("Error adding video URL:", error);
+      }
+    }
+  };
+
+  const handleAddCoach = async () => {
+    if (newCoach) {
+      try {
+        const response = await fetch(`/api/${user.userId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: "add_coach", coachName: newCoach }),
+        });
+        const data = await response.json();
+        if (data.success) {
+          setCoaches([...coaches, newCoach]);
+          setNewCoach("");
+          setIsAddCoachModalOpen(false);
+          toast.success("Coach added successfully!");
+        } else {
+          console.error(data.error);
+        }
+      } catch (error) {
+        console.error("Error adding coach:", error);
+      }
+    }
+  };
+
+  const handleAddAchievement = async () => {
+    if (newAchievement) {
+      try {
+        const response = await fetch(`/api/${user.userId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: "add_achievement", achievement: newAchievement }),
+        });
+        const data = await response.json();
+        if (data.success) {
+          setAchievements([...achievements, newAchievement]);
+          setNewAchievement("");
+          setIsAddAchievementModalOpen(false);
+          toast.success("Achievement added successfully!");
+        } else {
+          console.error(data.error);
+        }
+      } catch (error) {
+        console.error("Error adding achievement:", error);
       }
     }
   };
@@ -163,49 +243,53 @@ const User = () => {
               className="rounded-full w-24 h-24 border-2 border-gray-700"
             />
             <div className="ml-4">
-              <h1 className="text-2xl font-bold">{athlete ? athlete.Name : "Loading..."}</h1>
+              <h1 className="text-2xl font-bold">
+                {athlete ? athlete.Name : "Loading..."}&nbsp;&nbsp;
+                <MdEditNote
+                  className="inline scale-[1.5] cursor-pointer"
+                  onClick={() => setIsUpdateModalOpen(true)} // Open the update modal on click
+                />
+              </h1>
               <p className="text-gray-400">{athlete ? athlete.Address : ""}</p>
               <p className="text-gray-400">{athlete ? athlete.Email : ""}</p>
-              <p className="text-gray-400"><MdAddCall className="inline mr-2" />{athlete ? athlete.ContactNum : "Loading athlete info..."}</p>
+              <p className="text-gray-400">
+                <MdAddCall className="inline mr-2" />
+                {athlete ? athlete.ContactNum : "Loading athlete info..."}
+              </p>
             </div>
           </div>
 
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold mb-4">Plays Registered</h2>
-            {sports.length > 0 ? (
-              <ul className="space-y-4">
-                {sports.map((sport, index) => (
-                  <li key={index} className="p-4 bg-gray-700 rounded-lg">
-                    <h3 className="font-semibold">{sport.Name}</h3>
-                    <p className="text-gray-400">{sport.Category} Sport</p>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-400">No sports registered.</p>
-            )}
-            <button className="mt-6 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-lg transition duration-200">
-              <a href="/user/update">Update Plays</a>
-            </button>
-          </div>
+          {/* Reuse CoachList component */}
+          <CoachList
+            coaches={coaches}
+            isAddCoachModalOpen={isAddCoachModalOpen}
+            setIsAddCoachModalOpen={setIsAddCoachModalOpen}
+            newCoach={newCoach}
+            setNewCoach={setNewCoach}
+            handleAddCoach={handleAddCoach}
+          />
 
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold mb-4">Achievements</h2>
-            {achievements.length > 0 ? (
-              <ul className="space-y-4">
-                {achievements.map((achievement, index) => (
-                  <li key={index} className="p-4 bg-gray-700 rounded-lg">
-                    <h3 className="font-semibold">{achievement}</h3>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-400">No achievements recorded.</p>
-            )}
-          </div>
+          {/* Reuse AchievementList component */}
+          <AchievementList
+            achievements={achievements}
+            isAddAchievementModalOpen={isAddAchievementModalOpen}
+            setIsAddAchievementModalOpen={setIsAddAchievementModalOpen}
+            newAchievement={newAchievement}
+            setNewAchievement={setNewAchievement}
+            handleAddAchievement={handleAddAchievement}
+          />
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4">Activity</h2>
+            <h2 className="text-2xl mb-4 flex justify-between items-center">
+              <div className="font-semibold">Activity</div>
+              <Link href="/user/update">
+                <button
+                  className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg scale-[0.8]"
+                >
+                  Update Activity
+                </button>
+              </Link>
+            </h2>
             <div className="p-4 bg-gray-700 rounded-lg">
               {events.length > 0 ? (
                 <ul className="space-y-4">
@@ -217,7 +301,7 @@ const User = () => {
                           weekday: 'long',
                           year: 'numeric',
                           month: 'long',
-                          day: 'numeric'
+                          day: 'numeric',
                         })}
                       </p>
                       <p className="text-gray-300">Venue - {event.Venue}</p>
@@ -226,7 +310,7 @@ const User = () => {
 
                       {event.AthleteImage ? (
                         <img
-                          src={bufferToBase64(event.AthleteImage)} 
+                          src={bufferToBase64(event.AthleteImage)}
                           alt="Athlete Image"
                           className="w-24 h-24 rounded-lg"
                         />
@@ -243,9 +327,79 @@ const User = () => {
           </div>
         </div>
       </main>
-      <Footer />
 
-      {isModalOpen && (
+      <Footer />
+      <ToastContainer theme="dark" position="top-left" />
+
+      {/* Update Athlete Modal */}
+      {isUpdateModalOpen && (
+        <div className="fixed inset-0 bg-gray-700 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-96">
+            <h3 className="text-2xl font-semibold mb-4">Update Athlete Information</h3>
+            <div className="mb-4">
+              <label className="block text-gray-400">Name</label>
+              <input
+                type="text"
+                value={updatedName}
+                onChange={(e) => setUpdatedName(e.target.value)}
+                className="w-full p-2 bg-gray-700 text-white rounded-lg"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-400">Date of Birth</label>
+              <input
+                type="date"
+                value={updatedDOB}
+                onChange={(e) => setUpdatedDOB(e.target.value)}
+                className="w-full p-2 bg-gray-700 text-white rounded-lg"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-400">Contact Number</label>
+              <input
+                type="text"
+                value={updatedContactNum}
+                onChange={(e) => setUpdatedContactNum(e.target.value)}
+                className="w-full p-2 bg-gray-700 text-white rounded-lg"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-400">Email</label>
+              <input
+                type="email"
+                value={updatedEmail}
+                onChange={(e) => setUpdatedEmail(e.target.value)}
+                className="w-full p-2 bg-gray-700 text-white rounded-lg"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-400">Address</label>
+              <input
+                type="text"
+                value={updatedAddress}
+                onChange={(e) => setUpdatedAddress(e.target.value)}
+                className="w-full p-2 bg-gray-700 text-white rounded-lg"
+              />
+            </div>
+            <div className="flex justify-between">
+              <button
+                onClick={() => setIsUpdateModalOpen(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdate}
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg"
+              >
+                Update
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-80">
             <h3 className="text-xl font-semibold mb-4">Enter Video URL</h3>

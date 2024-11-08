@@ -78,7 +78,7 @@ export default function Form() {
 
       if (result.success) {
         alert('Submission successful!');
-        router.push('/user'); // Redirect to user profile page
+        router.push('/user'); 
       } else {
         alert('Error: ' + result.error);
       }

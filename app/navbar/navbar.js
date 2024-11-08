@@ -14,7 +14,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="flex justify-between items-center px-6 py-5 shadow-lg">
+    <header className="flex justify-between items-center px-6 py-5 shadow-lg z-50">
       <div className="text-3xl md:text-4xl font-bold">
         <a href="/home">Sporty<span className="text-blue-500">India</span></a>
       </div>

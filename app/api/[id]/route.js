@@ -283,13 +283,27 @@ export async function PUT(request, { params }) {
             return NextResponse.json({ error: "Athlete not found or no changes made" }, { status: 404 });
         }
 
-        if (email || name) {
+        if (email) {
             const updateUserSql = `
                 UPDATE users
-                SET FullName = ?, Email = ?
+                SET Email = ?
                 WHERE UserID = ?
             `;
-            const updateUserValues = [name || '', email || '', id];
+            const updateUserValues = [email || '', id];
+            const updateUserResult = await db.query(updateUserSql, updateUserValues);
+
+            if (updateUserResult.affectedRows === 0) {
+                console.error(`User with UserID ${id} not found or no changes made.`);
+            }
+        }
+
+        if (name) {
+            const updateUserSql = `
+                UPDATE users
+                SET FullName = ?
+                WHERE UserID = ?
+            `;
+            const updateUserValues = [name || '', id];
             const updateUserResult = await db.query(updateUserSql, updateUserValues);
 
             if (updateUserResult.affectedRows === 0) {

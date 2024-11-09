@@ -8,6 +8,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { CoachList, AchievementList, SportList, ActivityList, UploadList } from "../../components/Lists";
 import { FaInfoCircle } from "react-icons/fa";
+import { RiDashboard2Line } from "react-icons/ri";
 
 const User = () => {
   const [user, setUser] = useState(null);
@@ -184,14 +185,20 @@ const User = () => {
 
   const handleDelete = async (action, item) => {
     if (!action || !item) return;
-
+  
+    const confirmDeletion = window.confirm(`Are you sure you want to delete this ${action.replace("delete_", "")}?`);
+  
+    if (!confirmDeletion) {
+      return;
+    }
+  
     try {
       const response = await fetch(`/api/${user.userId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, ...item }),
       });
-
+  
       const data = await response.json();
       if (data.success) {
         if (action === 'delete_video') {
@@ -215,6 +222,7 @@ const User = () => {
       toast.error("An error occurred while deleting.");
     }
   };
+  
 
   const handleAddSport = async () => {
     if (newSport) {
@@ -304,6 +312,7 @@ const User = () => {
                   className="inline scale-[1.1] cursor-pointer absolute right-0"
                   onClick={() => setIsCoachModalOpen(true)}
                 />
+                <a href="/coach" title="Go to Coach DashBoard"><RiDashboard2Line className="inline scale-[1.35] cursor-pointer absolute right-0 top-10"/></a>
               </h1>
               <p className="text-gray-400">{athlete ? athlete.Address : ""}</p>
               <p className="text-gray-400">{athlete ? athlete.Email : ""}</p>

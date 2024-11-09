@@ -1,10 +1,11 @@
 "use client";
 import { useState } from "react";
-import { FaCog, FaUser, FaEdit } from "react-icons/fa";
+import { FaCog, FaUser } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { IoHelpOutline, IoHomeSharp } from "react-icons/io5";
 import { MdDashboard } from "react-icons/md";
 import { FiLogOut } from "react-icons/fi";
+import { MdFoodBank } from "react-icons/md";
 
 export default function Navbar() {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -15,10 +16,14 @@ export default function Navbar() {
 
   return (
     <header className="flex justify-between items-center px-6 py-5 shadow-lg z-50">
-      <div className="text-3xl md:text-4xl font-bold">
-        <a href="/home">Sporty<span className="text-blue-500">India</span></a>
+      <div className="flex items-center space-x-2">
+        <a href="/home"><IoHomeSharp className="text-3xl md:hidden" /></a>
+        <div className="text-3xl md:text-4xl font-bold hidden md:block">
+          <a href="/home">
+            Sporty<span className="text-blue-500">India</span>
+          </a>
+        </div>
       </div>
-
 
       {/* Search Bar */}
       <div className="hidden md:flex items-center flex-grow max-w-xs space-x-3 mr-[100px]">
@@ -33,7 +38,7 @@ export default function Navbar() {
       <div className="relative">
         <button onClick={toggleDropdown} className="flex items-center space-x-2">
           <img
-            src="/logo.png" // Replace with dynamic profile pic
+            src="/logo.png"
             alt="Profile"
             className="w-10 h-10 rounded-full border-2 border-white"
           />
@@ -46,7 +51,10 @@ export default function Navbar() {
             transition={{ duration: 0.3 }}
           >
             <ul className="py-2">
-              {/* Search Bar inside Dropdown for Small Screens */}
+              <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
+                <MdDashboard />
+                <a href="/dashboard"><span>Dashboard</span></a>
+              </li>
               <li className="px-4 py-2 hover:bg-gray-700 md:hidden">
                 <input
                   type="text"
@@ -55,12 +63,8 @@ export default function Navbar() {
                 />
               </li>
               <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
-                <IoHomeSharp />
-                <a href="/"><span>Home</span></a>
-              </li>
-              <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
-                <MdDashboard />
-                <a href="/dashboard"><span>Dashboard</span></a>
+                <MdFoodBank className="scale-[1.3]" />
+                <a href="/resource"><span>Diet</span></a>
               </li>
               <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
                 <FaUser />
@@ -70,8 +74,11 @@ export default function Navbar() {
                 <FaCog />
                 <span>Settings</span>
               </li>
-              <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2" onClick={()=>localStorage.removeItem("loginInfo")}>
-                <FiLogOut className="text-[22px]"/>
+              <li
+                className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2"
+                onClick={() => localStorage.removeItem("loginInfo")}
+              >
+                <FiLogOut className="text-[22px]" />
                 <a href="/home"><span>LogOut</span></a>
               </li>
             </ul>

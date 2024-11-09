@@ -1,6 +1,6 @@
 "use client";
-import React, { useState,useEffect } from "react";
-import { FaUsers, FaCheckCircle, FaTasks, FaRocket, FaBars, FaTimes,FaUser } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { FaUsers, FaCheckCircle, FaTasks, FaRocket, FaBars, FaTimes, FaUser } from "react-icons/fa";
 import { motion } from "framer-motion";
 import Footer from "../footer/footer";
 import Link from "next/link";
@@ -8,11 +8,38 @@ import Link from "next/link";
 const sportyIndia = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [userInfoExists, setUserInfoExists] = useState(false);
-  
+
+  const [stats, setStats] = useState({
+    postsCount: 0,
+    athletesCount: 0,
+    eventsCount: 0,
+  });
+
   useEffect(() => {
     const userInfo = localStorage.getItem('loginInfo');
     setUserInfoExists(!!userInfo);
+
+    const fetchStats = async () => {
+      try {
+        const response = await fetch('/api/home');
+        const data = await response.json();
+        if (response.ok) {
+          setStats({
+            postsCount: data.postsCount,
+            athletesCount: data.athletesCount,
+            eventsCount: data.eventsCount,
+          });
+        } else {
+          console.error('Failed to fetch stats:', data);
+        }
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
+    fetchStats();
   }, []);
+
 
   const toggleNav = () => {
     setIsNavOpen(!isNavOpen);
@@ -38,7 +65,7 @@ const sportyIndia = () => {
             <ul className="flex space-x-8">
               {["Athletes", "Challenges", "Spotlight", "Blog"].map((item) => (
                 <li key={item}>
-                  <a href={"/"+item} className="text-white hover:text-blue-500 transition duration-200 text-lg font-medium">
+                  <a href={"/" + item} className="text-white hover:text-blue-500 transition duration-200 text-lg font-medium">
                     {item}
                   </a>
                 </li>
@@ -50,11 +77,11 @@ const sportyIndia = () => {
           <button className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-lg transition duration-200 transform hover:scale-105">
             + Admin
           </button>
-          {!userInfoExists?(<button className="border border-white hover:border-blue-500 hover:text-blue-500 text-white py-2 px-4 rounded-lg transition duration-200 transform hover:scale-105">
+          {!userInfoExists ? (<button className="border border-white hover:border-blue-500 hover:text-blue-500 text-white py-2 px-4 rounded-lg transition duration-200 transform hover:scale-105">
             <Link href="/login" className="text-white hover:text-blue-500 transition duration-200">
               Sign In or Create Account
             </Link>
-          </button>):(<a href="/user"><FaUser className="text-3xl my-2"/></a>)}
+          </button>) : (<a href="/user"><FaUser className="text-3xl my-2" /></a>)}
         </div>
 
         <div className="md:hidden flex items-center">
@@ -71,7 +98,7 @@ const sportyIndia = () => {
             <ul className="space-y-4">
               {["Athletes", "Challenges", "Spotlight", "Blog"].map((item) => (
                 <li key={item}>
-                  <a href={"/"+item} className="text-white hover:text-blue-500 transition duration-200">
+                  <a href={"/" + item} className="text-white hover:text-blue-500 transition duration-200">
                     {item}
                   </a>
                 </li>
@@ -79,8 +106,8 @@ const sportyIndia = () => {
             </ul>
           </nav>
           <button className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg">
-          <a href="/admin">
-            + Admin</a>
+            <a href="/admin">
+              + Admin</a>
           </button>
           <button className="border border-white hover:border-blue-500 hover:text-blue-500 text-white py-2 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg">
             <a href="/login">Sign In or Create Account</a>
@@ -97,7 +124,7 @@ const sportyIndia = () => {
           <div className="flex justify-center items-center mb-4">
             <p className="text-green-400 text-sm font-medium flex items-center">
               <FaRocket className="mr-2 text-yellow-100" />
-              41 NEW POSTS THIS WEEK!
+              {stats.postsCount} NEW POSTS THIS WEEK!
             </p>
           </div>
           <h1 className="text-6xl font-bold text-gray-300 mb-4">
@@ -129,7 +156,7 @@ const sportyIndia = () => {
       <div className="flex z-1 py-20 px-6 pt-28 items-center justify-center flex-wrap gap-10 relative z-10">
         <StatCard
           icon={<FaUsers className="w-10 h-10 mb-4 text-gray-400" />}
-          number="5,227"
+          number={stats.athletesCount}
           description="Athletes Registered"
         />
         <StatCard
@@ -139,13 +166,13 @@ const sportyIndia = () => {
         />
         <StatCard
           icon={<FaTasks className="w-10 h-10 mb-4 text-gray-400" />}
-          number="1,191"
+          number={stats.eventsCount}
           description="Events participation"
         />
       </div>
 
       <CustomAccordion />
-      <Footer/>
+      <Footer />
     </div>
   );
 };
@@ -169,7 +196,7 @@ const CustomAccordion = () => {
     {
       "title": "Is Sporty India Paid?",
       "content": "Sporty India is completely free of cost. We believe that every athlete deserves the opportunity to showcase their skills and achievements without any financial barriers. Our platform provides free access to all athletes, allowing them to create profiles and gain visibility within the sports community."
-    }    
+    }
     ,
   ];
 

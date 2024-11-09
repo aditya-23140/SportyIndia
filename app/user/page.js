@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Navbar from "../navbar/navbar";
 import Footer from "../footer/footer";
 import { MdAddCall, MdEditNote } from "react-icons/md";
@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { CoachList, AchievementList, SportList, ActivityList, UploadList } from "../../components/Lists";
 import { FaInfoCircle } from "react-icons/fa";
 import { RiDashboard2Line } from "react-icons/ri";
+import { IoIosAddCircle } from "react-icons/io";
 
 const User = () => {
   const [user, setUser] = useState(null);
@@ -36,6 +37,8 @@ const User = () => {
   const [updatedContactNum, setUpdatedContactNum] = useState('');
   const [updatedEmail, setUpdatedEmail] = useState('');
   const [updatedAddress, setUpdatedAddress] = useState('');
+  const [profilePic, setProfilePic] = useState(null);
+  const fileInputRef = useRef(null);
 
   const fetchUserData = async (userId) => {
     try {
@@ -185,20 +188,20 @@ const User = () => {
 
   const handleDelete = async (action, item) => {
     if (!action || !item) return;
-  
+
     const confirmDeletion = window.confirm(`Are you sure you want to delete this ${action.replace("delete_", "")}?`);
-  
+
     if (!confirmDeletion) {
       return;
     }
-  
+
     try {
       const response = await fetch(`/api/${user.userId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, ...item }),
       });
-  
+
       const data = await response.json();
       if (data.success) {
         if (action === 'delete_video') {
@@ -222,7 +225,6 @@ const User = () => {
       toast.error("An error occurred while deleting.");
     }
   };
-  
 
   const handleAddSport = async () => {
     if (newSport) {
@@ -270,6 +272,50 @@ const User = () => {
     }
   };
 
+  const handleImageChange = (e) => {
+    const { files } = e.target;
+    const file = files[0];
+  
+    if (file) {
+      const reader = new FileReader();
+  
+      reader.onloadend = () => {
+        setProfilePic(reader.result.split(',')[1]);
+      };
+  
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  const handleAddProfile = async () => {
+    if (!profilePic) {
+      toast.error("Please select a profile picture.");
+      return;
+    }
+  
+    const formData = new FormData();
+    formData.append("profilePic", profilePic);
+
+    try {
+      const response = await fetch(`/api/${user.userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'multipart/form-data' },
+        body: JSON.stringify({action:"add_profilePic",profilePic:profilePic}),
+      });
+  
+      const data = await response.json();
+      if (data.success) {
+        toast.success("Profile picture updated successfully!");
+        setProfilePic(null);
+      } else {
+        toast.error(data.error || "Failed to update profile picture.");
+      }
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+      toast.error("An error occurred while uploading the profile picture.");
+    }
+  };
+  
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center bg-gradient-to-b from-black to-gray-900 text-white">
@@ -277,12 +323,11 @@ const User = () => {
       </div>
     );
   }
-
+  
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-black to-gray-900 text-white">
       <Navbar />
       <main className="flex flex-col md:flex-row p-6 space-x-0 md:space-x-6">
-
         <UploadList
           recentUploads={recentUploads}
           isModalOpen={isModalOpen}
@@ -292,15 +337,37 @@ const User = () => {
           handleAddUrl={handleAddUrl}
           handleDelete={handleDelete}
         />
-
-
+  
         <div className="w-full md:w-3/4 bg-gray-800 p-6 rounded-lg shadow-lg">
           <div className="flex items-center mb-6 relative">
             <img
-              src="/logo.png"
+              src={profilePic ? `data:image/jpeg;base64,${profilePic}` : "/logo.png"}
               alt="Profile"
               className="rounded-full w-24 h-24 border-2 border-gray-700"
             />
+            <IoIosAddCircle
+              className="absolute text-3xl top-1 cursor-pointer"
+              onClick={() => fileInputRef.current.click()}
+            />
+  
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ display: "none" }}
+            />
+  
+            {profilePic && (
+              <button
+                onClick={handleAddProfile}
+                className="mt-[5rem] ml-2 px-4 py-2 bg-blue-500 text-white rounded absolute"
+              >
+                Upload
+              </button>
+            )}
+  
+
             <div className="ml-4">
               <h1 className="text-2xl font-bold">
                 {athlete ? athlete.Name : "Loading..."}&nbsp;&nbsp;
@@ -312,7 +379,7 @@ const User = () => {
                   className="inline scale-[1.1] cursor-pointer absolute right-0"
                   onClick={() => setIsCoachModalOpen(true)}
                 />
-                <a href="/coach" title="Go to Coach DashBoard"><RiDashboard2Line className="inline scale-[1.35] cursor-pointer absolute right-0 top-10"/></a>
+                <a href="/coach" title="Go to Coach DashBoard"><RiDashboard2Line className="inline scale-[1.35] cursor-pointer absolute right-0 top-10" /></a>
               </h1>
               <p className="text-gray-400">{athlete ? athlete.Address : ""}</p>
               <p className="text-gray-400">{athlete ? athlete.Email : ""}</p>

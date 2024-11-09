@@ -30,7 +30,6 @@ const ActivityList = ({ events, handleDelete }) => {
           [imageId]: `/images/${data.imageId}.png`,
         }));
       }
-      console.log(imageId);
     } catch (error) {
       console.error('Error fetching image data:', error);
     }
@@ -83,7 +82,7 @@ const ActivityList = ({ events, handleDelete }) => {
                     <img
                       src={imageData[event.AthleteImage]}
                       alt="Athlete Image"
-                      className="w-24 h-24 rounded-lg"
+                      className="w-24 h-24 rounded-lg absolute right-16 top-7 scale-[1.5]"
                     />
                   ) : (
                     <p>Loading Image...</p>

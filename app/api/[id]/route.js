@@ -11,7 +11,7 @@ export async function GET(request, { params }) {
         const db = await createConnection();
 
         const athleteSql = `
-            SELECT a.AthleteID, a.Name, a.Email, a.ContactNum, a.Address,
+            SELECT a.AthleteID, a.Name, a.Email, a.ContactNum, a.Address, a.profilePicture
                 GROUP_CONCAT(DISTINCT c.Name) AS Coaches, 
                 GROUP_CONCAT(DISTINCT ach.Achievement) AS Achievements
             FROM athlete a
@@ -66,15 +66,18 @@ export async function GET(request, { params }) {
 
 export async function POST(request, { params }) {
     const { id } = params;
+    console.log(id);
     if (!id) {
         return NextResponse.json({ error: "ID parameter is required" }, { status: 400 });
     }
 
     try {
         const db = await createConnection();
+        console.log("hello")
         const body = await request.json();
         const { action } = body;
-
+        console.log(body);
+        console.log(action);
         if (action === "add_video") {
             const { videoUrl } = body;
             if (!videoUrl) {
@@ -149,7 +152,7 @@ export async function POST(request, { params }) {
             await db.query(`
                 INSERT INTO positions (AthleteID, SportID, Position, Performance) 
                 VALUES (?, ?, ?, ?)
-            `, [id, sportID,updateNeeded,updateNeeded]);
+            `, [id, sportID, updateNeeded, updateNeeded]);
 
             return NextResponse.json({ success: true, message: "Sport added to athlete successfully" }, { status: 200 });
         } else if (action === "be_coach") {
@@ -178,6 +181,20 @@ export async function POST(request, { params }) {
             }
 
             return NextResponse.json({ success: true, message: "Athlete is now a coach" }, { status: 200 });
+        } else if (action === "add_profilePic") {
+            const { profilePic } = body;
+            console.log(profilePic)
+            if (!profilePic) {
+                return NextResponse.json({ error: "Profile picture is required" }, { status: 400 });
+            }
+
+            const profilePicBuffer = Buffer.from(profilePic, 'base64');
+
+            await db.query(`
+                UPDATE athlete SET ProfilePicture = ? WHERE AthleteID = ?
+            `, [profilePicBuffer, id]);
+
+            return NextResponse.json({ success: true, message: "Profile picture added successfully" }, { status: 200 });
         } else {
             const { sport, date, match, performance, photo } = body;
 

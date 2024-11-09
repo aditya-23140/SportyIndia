@@ -10,7 +10,7 @@ const sportyIndia = () => {
   const [userInfoExists, setUserInfoExists] = useState(false);
   
   useEffect(() => {
-    const userInfo = localStorage.getItem('userInfo');
+    const userInfo = localStorage.getItem('loginInfo');
     setUserInfoExists(!!userInfo);
   }, []);
 

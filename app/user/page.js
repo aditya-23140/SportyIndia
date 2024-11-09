@@ -28,7 +28,7 @@ const User = () => {
   const [isAddSportModalOpen, setIsAddSportModalOpen] = useState(false);
   const [isCoachModalOpen, setIsCoachModalOpen] = useState(false);
   const [specialization, setSpecialization] = useState('');
-
+  const [addCoachSpecialization, setaddCoachSpecialization] = useState('');
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [updatedName, setUpdatedName] = useState('');
   const [updatedDOB, setUpdatedDOB] = useState('');
@@ -128,25 +128,34 @@ const User = () => {
   };
 
   const handleAddCoach = async () => {
-    if (newCoach) {
+    if (newCoach && addCoachSpecialization) {
       try {
         const response = await fetch(`/api/${user.userId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: "add_coach", coachName: newCoach }),
+          body: JSON.stringify({
+            action: 'add_coach',
+            coachName: newCoach,
+            coachSpecialization: addCoachSpecialization
+          }),
         });
+
         const data = await response.json();
+
         if (data.success) {
-          setCoaches([...coaches, newCoach]);
-          setNewCoach("");
+          setCoaches([...coaches, `${newCoach} - ${addCoachSpecialization}`]);
+          setNewCoach('');
+          setaddCoachSpecialization('');
           setIsAddCoachModalOpen(false);
-          toast.success("Coach added successfully!");
+          toast.success('Coach added successfully!');
         } else {
           console.error(data.error);
         }
       } catch (error) {
-        console.error("Error adding coach:", error);
+        console.error('Error adding coach:', error);
       }
+    } else {
+      toast.error('Please provide both coach name and specialization');
     }
   };
 
@@ -241,7 +250,6 @@ const User = () => {
         });
         const data = await response.json();
         if (data.success) {
-          // setCoaches([...coaches, { specialization }]);
           setSpecialization("");
           setIsCoachModalOpen(false);
           toast.success(`You are now a Coach with ${specialization} specialization!`);
@@ -312,9 +320,12 @@ const User = () => {
             setIsAddCoachModalOpen={setIsAddCoachModalOpen}
             newCoach={newCoach}
             setNewCoach={setNewCoach}
+            addCoachSpecialization={addCoachSpecialization}
+            setAddCoachSpecialization={setaddCoachSpecialization}
             handleAddCoach={handleAddCoach}
             handleDelete={handleDelete}
           />
+
 
           <AchievementList
             achievements={achievements}

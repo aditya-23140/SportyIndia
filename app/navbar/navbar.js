@@ -70,7 +70,7 @@ export default function Navbar() {
                 <FaCog />
                 <span>Settings</span>
               </li>
-              <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2" onClick={()=>localStorage.removeItem("userInfo")}>
+              <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2" onClick={()=>localStorage.removeItem("loginInfo")}>
                 <FiLogOut className="text-[22px]"/>
                 <a href="/home"><span>LogOut</span></a>
               </li>

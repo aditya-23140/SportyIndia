@@ -21,7 +21,18 @@ const getYouTubeEmbedUrl = (url) => {
   return null;
 };
 
-const CoachList = ({ coaches, onAddCoach, isAddCoachModalOpen, setIsAddCoachModalOpen, newCoach, setNewCoach, handleAddCoach, handleDelete }) => {
+const CoachList = ({
+  coaches,
+  onAddCoach,
+  isAddCoachModalOpen,
+  setIsAddCoachModalOpen,
+  newCoach,
+  setNewCoach,
+  addCoachSpecialization,
+  setAddCoachSpecialization,
+  handleAddCoach,
+  handleDelete
+}) => {
   return (
     <div className="mb-6">
       <h2 className="text-2xl mb-4 flex justify-between items-center">
@@ -38,7 +49,10 @@ const CoachList = ({ coaches, onAddCoach, isAddCoachModalOpen, setIsAddCoachModa
           <ul className="space-y-4">
             {coaches.map((coach, index) => (
               <li key={index} className="p-4 bg-gray-700 rounded-lg relative">
-                <AiOutlineUserDelete className="absolute text-3xl right-3 top-3 text-red-300 cursor-pointer" onClick={() => handleDelete('delete_coach', { coachName: coach })} />
+                <AiOutlineUserDelete
+                  className="absolute text-3xl right-3 top-3 text-red-300 cursor-pointer"
+                  onClick={() => handleDelete('delete_coach', { coachName: coach })}
+                />
                 <h3 className="font-semibold">{coach}</h3>
               </li>
             ))}
@@ -51,7 +65,9 @@ const CoachList = ({ coaches, onAddCoach, isAddCoachModalOpen, setIsAddCoachModa
       {isAddCoachModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-80">
-            <h3 className="text-xl font-semibold mb-4">Enter Coach Name</h3>
+            <h3 className="text-xl font-semibold mb-4">Enter Coach Details</h3>
+            
+            {/* Coach Name */}
             <input
               type="text"
               className="w-full p-2 mb-4 bg-gray-700 text-white rounded-lg"
@@ -59,6 +75,16 @@ const CoachList = ({ coaches, onAddCoach, isAddCoachModalOpen, setIsAddCoachModa
               value={newCoach}
               onChange={(e) => setNewCoach(e.target.value)}
             />
+
+            {/* Coach Specialization */}
+            <input
+              type="text"
+              className="w-full p-2 mb-4 bg-gray-700 text-white rounded-lg"
+              placeholder="Enter coach specialization"
+              value={addCoachSpecialization}
+              onChange={(e) => setAddCoachSpecialization(e.target.value)}
+            />
+
             <div className="flex justify-end space-x-4">
               <button
                 onClick={() => setIsAddCoachModalOpen(false)}
@@ -79,6 +105,9 @@ const CoachList = ({ coaches, onAddCoach, isAddCoachModalOpen, setIsAddCoachModa
     </div>
   );
 };
+
+export default CoachList;
+
 
 const AchievementList = ({ achievements, onAddAchievement, isAddAchievementModalOpen, setIsAddAchievementModalOpen, newAchievement, setNewAchievement, handleAddAchievement, handleDelete }) => {
   return (

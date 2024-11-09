@@ -61,9 +61,11 @@ const LoginSignup = () => {
       const result = await response.json();
       console.log(result);
       if (result.success) {
+        console.log(result.UserID);
+        console.log(result.user.UserID);
         const loginInfo = {
           email: data.email,
-          userId: result.user.id,
+          userId: result.user.UserID,
         };
         console.log(loginInfo);
         localStorage.setItem("loginInfo", JSON.stringify(loginInfo));

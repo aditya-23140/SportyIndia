@@ -11,17 +11,34 @@ export default function Form() {
     date: '',
     match: '',
     performance: '',
-    photo: null
+    photo: null,
   });
-  const router = useRouter();
   const [athleteId, setAthleteId] = useState(null);
+  const [sportsList, setSportsList] = useState([]);
+  const router = useRouter();
 
-  // Retrieve athleteId from localStorage
   useEffect(() => {
+    const fetchSports = async () => {
+      try {
+        const response = await fetch('/api/sports');
+        const result = await response.json();
+        if (Array.isArray(result)) {
+          console.log(result);
+          setSportsList(result);
+        } else {
+          console.error('Failed to load sports data');
+        }
+      } catch (error) {
+        console.error('Error fetching sports:', error);
+      }
+    };
+
+    fetchSports();
+
     const storedUser = localStorage.getItem('loginInfo');
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
-      setAthleteId(parsedUser.userId); // Assuming userId is stored in loginInfo
+      setAthleteId(parsedUser.userId);
     }
   }, []);
 
@@ -42,7 +59,7 @@ export default function Form() {
       reader.onloadend = () => {
         setFormData((prevState) => ({
           ...prevState,
-          photo: reader.result.split(',')[1], // Get base64 encoded image data
+          photo: reader.result.split(',')[1],
         }));
       };
       reader.readAsDataURL(file);
@@ -110,14 +127,15 @@ export default function Form() {
                   required
                 >
                   <option value="">Select Sport</option>
-                  <option value="Football">Football</option>
-                  <option value="Hockey">Hockey</option>
-                  <option value="Athletics">Athletics</option>
-                  <option value="Cricket">Cricket</option>
-                  <option value="Javelin">Javelin</option>
-                  <option value="Swimming">Swimming</option>
-                  <option value="Shooting">Shooting</option>
-                  <option value="Weight-lifting">Weight-lifting</option>
+                  {sportsList.length > 0 ? (
+                    sportsList.map((sport) => (
+                      <option key={sport.SportId} value={sport.Name}>
+                        {sport.Name}
+                      </option>
+                    ))
+                  ) : (       
+                    <option value="">No sports available</option>
+                  )}
                 </select>
               </div>
 

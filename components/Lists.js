@@ -5,20 +5,195 @@ import { MdDeleteSweep } from "react-icons/md";
 import { AiOutlineUserDelete } from "react-icons/ai";
 import { TiDelete } from "react-icons/ti";
 import { FcDeleteDatabase } from "react-icons/fc";
+import { useState,useEffect } from "react";
 
-const bufferToBase64 = (buffer) => {
-  return `data:image/png;base64,${buffer.toString('base64')}`;
+const ActivityList = ({ events, handleDelete }) => {
+  const [imageData, setImageData] = useState({});
+
+  const fetchImageData = async (imageId) => {
+    try {
+      const response = await fetch(`/api/images`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageBuffer: imageId,
+        }),
+      });
+
+      const data = await response.json();
+      console.log(data);
+      if (data.imageId) {
+        setImageData((prevData) => ({
+          ...prevData,
+          [imageId]: `/images/${data.imageId}.png`,
+        }));
+      }
+      console.log(imageId);
+    } catch (error) {
+      console.error('Error fetching image data:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (events && events.length > 0) {
+      events.forEach((event) => {
+        if (event.AthleteImage) {
+          fetchImageData(event.AthleteImage);
+        }
+      });
+    }
+  }, [events]);
+
+  return (
+    <div>
+      <h2 className="text-2xl mb-4 flex justify-between items-center">
+        <div className="font-semibold">Activity</div>
+        <Link href="/user/update">
+          <button className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg scale-[0.8]">
+            Update Activity
+          </button>
+        </Link>
+      </h2>
+      <div className="p-4 bg-gray-700 rounded-lg">
+        {events.length > 0 ? (
+          <ul className="space-y-4">
+            {events.map((event, index) => (
+              <li key={index} className="p-4 bg-gray-600 rounded-lg relative">
+                <FcDeleteDatabase
+                  className="absolute right-3 text-2xl top-3 cursor-pointer"
+                  onClick={() => handleDelete('delete_event', { eventName: event.EventName })}
+                />
+                <h3 className="font-semibold">Event Name - {event.EventName}</h3>
+                <p className="text-gray-400">
+                  Date - {new Date(event.Date).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </p>
+                <p className="text-gray-300">Venue - {event.Venue}</p>
+                <p className="text-gray-200">Description - {event.Description}</p>
+                <p className="text-gray-200">Experience - {event.performance}</p>
+
+                {event.AthleteImage ? (
+                  imageData[event.AthleteImage] ? (
+                    <img
+                      src={imageData[event.AthleteImage]}
+                      alt="Athlete Image"
+                      className="w-24 h-24 rounded-lg"
+                    />
+                  ) : (
+                    <p>Loading Image...</p>
+                  )
+                ) : (
+                  <p>Image not available</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-400">No recent activity found.</p>
+        )}
+      </div>
+    </div>
+  );
 };
 
-const getYouTubeEmbedUrl = (url) => {
-  const youtubeRegex =
-    /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/]+\/[^\/]+\/|(?:v|e(?:mbed)?)\/|(?:v=|e(?:mbed)?\/))([a-zA-Z0-9_-]+)|youtu\.be\/([a-zA-Z0-9_-]+))/;
-  const match = url.match(youtubeRegex);
-  if (match) {
-    const videoId = match[1] || match[2];
-    return `https://www.youtube.com/embed/${videoId}`;
+const getEmbedUrl = (url) => {
+  const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/]+\/[^\/]+\/|(?:v|e(?:mbed)?)\/|(?:v=|e(?:mbed)?\/))([a-zA-Z0-9_-]+)|youtu\.be\/([a-zA-Z0-9_-]+))/;
+  const instagramRegex = /(?:https?:\/\/)?(?:www\.)?instagram\.com\/reel\/([A-Za-z0-9_-]+)/;
+
+  const youtubeMatch = url.match(youtubeRegex);
+  if (youtubeMatch) {
+    const videoId = youtubeMatch[1] || youtubeMatch[2];
+    return { embedUrl: `https://www.youtube.com/embed/${videoId}`, platform: 'youtube' };
   }
+
+  const instagramMatch = url.match(instagramRegex);
+  if (instagramMatch) {
+    const reelId = instagramMatch[1];
+    return { embedUrl: `https://www.instagram.com/p/${reelId}/embed`, platform: 'instagram' };
+  }
+
   return null;
+};
+
+const UploadList = ({ recentUploads, isModalOpen, setIsModalOpen, videoUrl, setVideoUrl, handleAddUrl, handleDelete }) => {
+  return (
+    <div className="w-full md:w-1/4 bg-gray-800 p-4 rounded-lg shadow-lg mb-6 md:mb-0">
+      <h2 className="text-xl font-semibold mb-4">Recent Uploads</h2>
+      <ul className="space-y-4">
+        {recentUploads.length > 0 ? (
+          recentUploads.map((upload, index) => {
+            const { embedUrl, platform } = getEmbedUrl(upload) || {};
+            const isInstagram = platform === 'instagram';
+            return (
+              <li key={index} className="p-4 bg-gray-700 rounded-lg relative">
+                <MdDelete className="text-red-300 text-3xl absolute z-10 bottom-0 right-0 cursor-pointer" onClick={() => handleDelete('delete_video', { videoUrl: upload })} />
+                {embedUrl ? (
+                  <div className="relative" style={{ paddingBottom: isInstagram ? "112.5%" : "56.25%" }}>
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      src={embedUrl}
+                      title="Video player"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      allowFullScreen
+                      className="absolute top-0 left-0 w-full h-full"
+                    ></iframe>
+                  </div>
+                ) : (
+                  <p className="text-gray-400">Invalid Video URL</p>
+                )}
+              </li>
+            );
+          })
+        ) : (
+          <p className="text-gray-400">No recent uploads found.</p>
+        )}
+      </ul>
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="mt-6 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-lg transition duration-200"
+      >
+        Add Video URL
+      </button>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-80">
+            <h3 className="text-xl font-semibold mb-4">Enter Video URL</h3>
+            <input
+              type="url"
+              className="w-full p-2 mb-4 bg-gray-700 text-white rounded-lg"
+              placeholder="https://example.com/video"
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+            />
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddUrl}
+                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg"
+              >
+                Add URL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 const CoachList = ({
@@ -105,9 +280,6 @@ const CoachList = ({
     </div>
   );
 };
-
-export default CoachList;
-
 
 const AchievementList = ({ achievements, onAddAchievement, isAddAchievementModalOpen, setIsAddAchievementModalOpen, newAchievement, setNewAchievement, handleAddAchievement, handleDelete }) => {
   return (
@@ -221,134 +393,6 @@ const SportList = ({ sports, isAddSportModalOpen, setIsAddSportModalOpen, newSpo
                 className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg"
               >
                 Add Sport
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const ActivityList = ({ events, handleDelete }) => {
-  return (
-    <div>
-      <h2 className="text-2xl mb-4 flex justify-between items-center">
-        <div className="font-semibold">Activity</div>
-        <Link href="/user/update">
-          <button
-            className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg scale-[0.8]"
-          >
-            Update Activity
-          </button>
-        </Link>
-      </h2>
-      <div className="p-4 bg-gray-700 rounded-lg">
-        {events.length > 0 ? (
-          <ul className="space-y-4">
-            {events.map((event, index) => (
-              <li key={index} className="p-4 bg-gray-600 rounded-lg relative">
-                {console.log(event.EventID)}
-                <FcDeleteDatabase className="absolute right-3 text-2xl top-3 cursor-pointer" onClick={() => handleDelete('delete_event', { eventName: event.EventName })} />
-                <h3 className="font-semibold">Event Name - {event.EventName}</h3>
-                <p className="text-gray-400">
-                  Date - {new Date(event.Date).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </p>
-                <p className="text-gray-300">Venue - {event.Venue}</p>
-                <p className="text-gray-200">Description - {event.Description}</p>
-                <p className="text-gray-200">Experience - {event.performance}</p>
-
-                {event.AthleteImage ? (
-                  <img
-                    src={bufferToBase64(event.AthleteImage)}
-                    alt="Athlete Image"
-                    className="w-24 h-24 rounded-lg"
-                  />
-                ) : (
-                  <p>Image not available</p>
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-400">No recent activity found.</p>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const UploadList = ({ recentUploads, isModalOpen, setIsModalOpen, videoUrl, setVideoUrl, handleAddUrl, handleDelete }) => {
-  return (
-    <div className="w-full md:w-1/4 bg-gray-800 p-4 rounded-lg shadow-lg mb-6 md:mb-0">
-      <h2 className="text-xl font-semibold mb-4">Recent Uploads</h2>
-      <ul className="space-y-4">
-        {recentUploads.length > 0 ? (
-          recentUploads.map((upload, index) => {
-            const youtubeEmbedUrl = getYouTubeEmbedUrl(upload);
-            return (
-              <li key={index} className="p-4 bg-gray-700 rounded-lg relative">
-                <MdDelete className="text-red-300 text-3xl absolute z-10 bottom-0 right-0 cursor-pointer" onClick={() => handleDelete('delete_video', { videoUrl: upload })} />
-                {youtubeEmbedUrl ? (
-                  <div className="relative" style={{ paddingBottom: "56.25%" }}>
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      src={youtubeEmbedUrl}
-                      title="YouTube video player"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      referrerPolicy="strict-origin-when-cross-origin"
-                      allowFullScreen
-                      className="absolute top-0 left-0 w-full h-full"
-                    ></iframe>
-                  </div>
-                ) : (
-                  <p className="text-gray-400">Invalid YouTube URL</p>
-                )}
-              </li>
-            );
-          })
-        ) : (
-          <p className="text-gray-400">No recent uploads found.</p>
-        )}
-      </ul>
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="mt-6 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-lg transition duration-200"
-      >
-        Add Video URL
-      </button>
-
-      {/* Video URL Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-80">
-            <h3 className="text-xl font-semibold mb-4">Enter Video URL</h3>
-            <input
-              type="url"
-              className="w-full p-2 mb-4 bg-gray-700 text-white rounded-lg"
-              placeholder="https://example.com/video"
-              value={videoUrl}
-              onChange={(e) => setVideoUrl(e.target.value)}
-            />
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddUrl}
-                className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg"
-              >
-                Add URL
               </button>
             </div>
           </div>

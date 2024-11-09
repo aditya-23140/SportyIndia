@@ -6,6 +6,7 @@ import { IoHelpOutline, IoHomeSharp } from "react-icons/io5";
 import { MdDashboard } from "react-icons/md";
 import { FiLogOut } from "react-icons/fi";
 import { MdFoodBank } from "react-icons/md";
+import { MdEventAvailable } from "react-icons/md";
 
 export default function Navbar() {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -35,7 +36,7 @@ export default function Navbar() {
       </div>
 
       {/* Profile Section */}
-      <div className="relative">
+      <div className="relative z-50">
         <button onClick={toggleDropdown} className="flex items-center space-x-2">
           <img
             src="/logo.png"
@@ -67,13 +68,17 @@ export default function Navbar() {
                 <a href="/resource"><span>Diet</span></a>
               </li>
               <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
+                <MdEventAvailable className="scale-[1.3]" />
+                <a href="/challenges"><span>Events</span></a>
+              </li>
+              <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
                 <FaUser />
                 <a href="/user"><span>Profile</span></a>
               </li>
-              <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
+              {/* <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
                 <FaCog />
                 <span>Settings</span>
-              </li>
+              </li> */}
               <li
                 className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2"
                 onClick={() => localStorage.removeItem("loginInfo")}

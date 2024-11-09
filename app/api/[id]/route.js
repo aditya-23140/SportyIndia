@@ -145,6 +145,11 @@ export async function POST(request, { params }) {
             await db.query(`
                 INSERT INTO plays (AthleteID, SportID) VALUES (?, ?)
             `, [id, sportID]);
+            const updateNeeded = 'Update Needed';
+            await db.query(`
+                INSERT INTO positions (AthleteID, SportID, Position, Performance) 
+                VALUES (?, ?, ?, ?)
+            `, [id, sportID,updateNeeded,updateNeeded]);
 
             return NextResponse.json({ success: true, message: "Sport added to athlete successfully" }, { status: 200 });
         } else if (action === "be_coach") {
@@ -339,7 +344,24 @@ export async function DELETE(request, { params }) {
             await db.query("DELETE FROM achievements WHERE AthleteID = ? AND Achievement = ?", [id, achievement]);
             return NextResponse.json({ success: true, message: "Achievement deleted successfully" });
         } else if (action === "delete_sport" && sport) {
-            await db.query("DELETE FROM plays WHERE AthleteID = ? AND SportID = (SELECT SportID FROM sport WHERE Name = ?)", [id, sport.Name]);
+            const [sportData] = await db.query(`
+                    SELECT SportID FROM sport WHERE Name = ?
+                `, [sport.Name]);
+
+            if (sportData.length === 0) {
+                return NextResponse.json({ error: "Sport not found" }, { status: 404 });
+            }
+
+            const sportID = sportData[0].SportID;
+
+            await db.query(`
+                    DELETE FROM plays WHERE AthleteID = ? AND SportID = ?
+                `, [id, sportID]);
+
+            await db.query(`
+                    DELETE FROM positions WHERE AthleteID = ? AND SportID = ?
+                `, [id, sportID]);
+
             return NextResponse.json({ success: true, message: "Sport deleted successfully" });
         } else if (action === "delete_event" && eventName) {
             const [event] = await db.query("SELECT EventID FROM event WHERE EventName = ?", [eventName]);

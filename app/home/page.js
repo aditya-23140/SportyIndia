@@ -63,14 +63,18 @@ const sportyIndia = () => {
         <div className="hidden md:flex">
           <nav>
             <ul className="flex space-x-8">
-              {["Athletes", "Challenges", "Spotlight", "Blog"].map((item) => (
+              {["athletes", "challenges", "dashboard", "resource"].map((item) => (
                 <li key={item}>
-                  <a href={"/" + item} className="text-white hover:text-blue-500 transition duration-200 text-lg font-medium">
-                    {item}
+                  <a
+                    href={"/" + item}
+                    className="text-white hover:text-blue-500 transition duration-200 text-lg font-medium"
+                  >
+                    {item.charAt(0).toUpperCase() + item.slice(1)}
                   </a>
                 </li>
               ))}
             </ul>
+
           </nav>
         </div>
         <div className="hidden md:flex space-x-4">
@@ -96,7 +100,7 @@ const sportyIndia = () => {
         <div className="md:hidden bg-gray-800 p-4 flex flex-col space-y-4 text-center relative z-10">
           <nav>
             <ul className="space-y-4">
-              {["Athletes", "Challenges", "Spotlight", "Blog"].map((item) => (
+              {["athletes", "challenges", "spotlight", "blog"].map((item) => (
                 <li key={item}>
                   <a href={"/" + item} className="text-white hover:text-blue-500 transition duration-200">
                     {item}

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Navbar from "../navbar/navbar";
-import Footer from "../footer/footer";
+import Navbar from "../../components/navbar";
+import Footer from "../../components/footer";
 import { MdDeleteForever } from "react-icons/md";
 import { MdEditDocument } from "react-icons/md";
 

@@ -5,7 +5,11 @@ export async function GET(req) {
   const connection = await createConnection();
 
   try {
-    const [rows] = await connection.execute('SELECT * FROM coach');
+    const [rows] = await connection.execute(`
+      SELECT coach.*, athlete.profilePicture,athlete.AthleteID
+      FROM coach
+      LEFT JOIN athlete ON coach.Name = athlete.Name
+    `);
     return NextResponse.json(rows, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch coaches' }, { status: 500 });

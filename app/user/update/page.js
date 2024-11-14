@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Navbar from '@/app/navbar/navbar';
-import Footer from '@/app/footer/footer';
+import Navbar from '@/components/navbar';
+import Footer from '@/components/footer';
 import { useRouter } from 'next/navigation';
 
 export default function Form() {

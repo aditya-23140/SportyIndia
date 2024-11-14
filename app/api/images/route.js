@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
 
-const generateRandomId = () => Math.floor(1000 + Math.random() * 9000);
+const generateRandomId = () => Math.floor(100000 + Math.random() * 900000);
 
 export async function POST(req) {
   try {
@@ -24,7 +24,6 @@ export async function POST(req) {
     const buffer = Buffer.from(base64Image, 'base64');
 
     fs.writeFileSync(imagePath, buffer);
-    console.log(imageId)
     return NextResponse.json({ imageId, base64Image }, { status: 201 });
 
   } catch (error) {

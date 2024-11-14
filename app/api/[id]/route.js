@@ -11,15 +11,16 @@ export async function GET(request, { params }) {
         const db = await createConnection();
 
         const athleteSql = `
-            SELECT a.AthleteID, a.Name, a.Email, a.ContactNum, a.Address, a.profilePicture
-                GROUP_CONCAT(DISTINCT c.Name) AS Coaches, 
-                GROUP_CONCAT(DISTINCT ach.Achievement) AS Achievements
+            SELECT a.AthleteID, a.Name, a.Email, a.ContactNum, a.Address, a.profilePicture,
+            GROUP_CONCAT(DISTINCT c.Name) AS Coaches, 
+            GROUP_CONCAT(DISTINCT ach.Achievement) AS Achievements
             FROM athlete a
             LEFT JOIN guides g ON a.AthleteID = g.AthleteID
             LEFT JOIN coach c ON g.CoachID = c.CoachID
             LEFT JOIN achievements ach ON a.AthleteID = ach.AthleteID
             WHERE a.AthleteID = ?
-            GROUP BY a.AthleteID, a.Name, a.Email, a.ContactNum, a.Address;
+            GROUP BY a.AthleteID, a.Name, a.Email, a.ContactNum, a.Address, a.profilePicture;
+
         `;
         const [athlete] = await db.query(athleteSql, [id]);
 

@@ -1,10 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Navbar from "../navbar/navbar";
-import Footer from "../footer/footer";
+import Navbar from "../../components/navbar";
+import Footer from "../../components/footer";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from 'next/router';
+import fetchImageData from "@/utils/fetchImageData";
 
 const Dashboard = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -18,6 +19,7 @@ const Dashboard = () => {
   const [visibleCoaches, setVisibleCoaches] = useState(8);
   const [visibleAthletes, setVisibleAthletes] = useState(8);
   const [visibleVideos, setVisibleVideos] = useState(8);
+  const [imageData, setImageData] = useState({});
 
   const slides = [
     { src: "/ichigo.jpg", alt: "Slide 1" },
@@ -27,7 +29,7 @@ const Dashboard = () => {
 
   const getEmbedUrl = (url) => {
     if (!url || typeof url !== 'string') {
-      return null; // Return null if the URL is not valid
+      return null;
     }
 
     const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/]+\/[^\/]+\/|(?:v|e(?:mbed)?)\/|(?:v=|e(?:mbed)?\/))([a-zA-Z0-9_-]+)|youtu\.be\/([a-zA-Z0-9_-]+))/;
@@ -45,7 +47,7 @@ const Dashboard = () => {
       return { embedUrl: `https://www.instagram.com/p/${reelId}/embed`, platform: 'instagram' };
     }
 
-    return null; // Return null if no valid match is found
+    return null; 
   };
 
   const fetchSportsData = async () => {
@@ -118,7 +120,6 @@ const Dashboard = () => {
     }
   };
 
-  // Function to handle the "View More" button click
   const handleViewMoreSports = () => {
     setVisibleSports((prev) => prev + 8);
   };
@@ -135,17 +136,26 @@ const Dashboard = () => {
     setVisibleVideos((prev) => prev + 8);
   };
 
-  // Check if there are more items to show
   const hasMoreSports = visibleSports < sportsData.length;
   const hasMoreCoaches = visibleCoaches < coachesData.length;
   const hasMoreAthletes = visibleAthletes < athletesData.length;
   const hasMoreVideos = visibleVideos < recentVideos.length;
+  
+  useEffect(() => {
+    if (athletesData && athletesData.length > 0) {
+      athletesData.forEach((athlete) => {
+        if (athlete.profilePicture) {
+          fetchImageData(athlete.AthleteID, athlete.profilePicture,imageData,setImageData);
+        }
+      });
+    }
+  }, [athletesData]);  
 
   return (
     <div className="bg-gray-900 text-white">
       <Navbar />
 
-      {/* Slider Section */}
+      {/* Slider Section */} 
       <div className="relative w-full bg-gray-800 z-0">
         <div className="relative h-72 overflow-hidden md:h-96 z-0">
           <AnimatePresence>
@@ -236,7 +246,7 @@ const Dashboard = () => {
           {athletesData.slice(0, visibleAthletes).map((athlete, index) => (
             <div key={index} className="bg-gray-700 p-6 rounded-lg shadow-md text-center">
               <Image
-                src={athlete.image}
+                src={imageData[`${athlete.AthleteID}_${athlete.profilePicture}`]}
                 alt={athlete.name}
                 width={200}
                 height={200}
@@ -263,8 +273,9 @@ const Dashboard = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
           {coachesData.slice(0, visibleCoaches).map((coach, index) => (
             <div key={index} className="bg-gray-700 p-6 rounded-lg shadow-md text-center">
+              {console.log(coach) }
               <Image
-                src={coach.image}
+                src={imageData[`${coach.AthleteID}_${coach.profilePicture}`]}
                 alt={coach.name}
                 width={200}
                 height={200}

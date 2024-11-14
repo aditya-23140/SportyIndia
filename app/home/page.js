@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { FaUsers, FaCheckCircle, FaTasks, FaRocket, FaBars, FaTimes, FaUser } from "react-icons/fa";
 import { motion } from "framer-motion";
-import Footer from "../footer/footer";
+import Footer from "../../components/footer";
 import Link from "next/link";
 
 const sportyIndia = () => {

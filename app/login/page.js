@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { IoEye, IoEyeOff } from "react-icons/io5";
-import Navbar from "../navbar/navbar";
+import Navbar from "../../components/navbar";
 
 const LoginSignup = () => {
   const [isSignUp, setIsSignUp] = useState(false);

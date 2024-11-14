@@ -19,7 +19,7 @@ const ActivityList = ({ events, handleDelete }) => {
         },
         body: JSON.stringify({
           imageBuffer: imageId,
-        }),
+        }), 
       });
 
       const data = await response.json();
@@ -36,7 +36,7 @@ const ActivityList = ({ events, handleDelete }) => {
   };
 
   useEffect(() => {
-    if (events && events.length > 0) {
+    if (events && events.length > 0) {  
       events.forEach((event) => {
         if (event.AthleteImage) {
           fetchImageData(event.AthleteImage);

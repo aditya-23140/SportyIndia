@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState, useRef } from "react";
-import Navbar from "../navbar/navbar";
-import Footer from "../footer/footer";
+import Navbar from "../../components/navbar";
+import Footer from "../../components/footer";
 import { MdAddCall, MdEditNote } from "react-icons/md";
 import Link from "next/link";
 import { ToastContainer, toast } from 'react-toastify';
@@ -10,6 +10,7 @@ import { CoachList, AchievementList, SportList, ActivityList, UploadList } from 
 import { FaInfoCircle } from "react-icons/fa";
 import { RiDashboard2Line } from "react-icons/ri";
 import { IoIosAddCircle } from "react-icons/io";
+import fetchImageData from "@/utils/fetchImageData";
 
 const User = () => {
   const [user, setUser] = useState(null);
@@ -39,6 +40,7 @@ const User = () => {
   const [updatedAddress, setUpdatedAddress] = useState('');
   const [profilePic, setProfilePic] = useState(null);
   const fileInputRef = useRef(null);
+  const [imageData, setImageData] = useState({});
 
   const fetchUserData = async (userId) => {
     try {
@@ -316,14 +318,6 @@ const User = () => {
     }
   };
   
-  if (loading) {
-    return (
-      <div className="min-h-screen flex justify-center items-center bg-gradient-to-b from-black to-gray-900 text-white">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-  
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-black to-gray-900 text-white">
       <Navbar />
@@ -341,7 +335,7 @@ const User = () => {
         <div className="w-full md:w-3/4 bg-gray-800 p-6 rounded-lg shadow-lg">
           <div className="flex items-center mb-6 relative">
             <img
-              src={profilePic ? `data:image/jpeg;base64,${profilePic}` : "/logo.png"}
+              src='/logo.png'
               alt="Profile"
               className="rounded-full w-24 h-24 border-2 border-gray-700"
             />

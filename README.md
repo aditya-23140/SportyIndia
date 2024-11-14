@@ -37,7 +37,7 @@ To run the Sporty India application locally, follow these steps:
    cd Sporty_India
 
 2. **Install Dependencies:**
-   npm install next react react-dom framer-motion react-icons tailwindcss
+   npm install next react react-dom framer-motion react-icons tailwindcss dotenv mysql2 react-toastify swiper axios cors
    
 3. **Run the development server:**
    npm run dev

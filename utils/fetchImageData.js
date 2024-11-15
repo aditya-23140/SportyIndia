@@ -12,7 +12,6 @@ const fetchImageData = async (athleteId, imageId,imageData,setImageData) => {
                 imageBuffer: imageId,
             }),
         });
-
         const data = await response.json();
         if (data.imageId) {
             setImageData((prevData) => ({

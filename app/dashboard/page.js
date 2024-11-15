@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Navbar from "../../components/navbar";
-import Footer from "../../components/footer";
+import Navbar from "@/components/navbar";
+import Footer from "@/components/footer";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import fetchImageData from "@/utils/fetchImageData";
 import Loader from "@/components/Loader";
 import ViewMore from "@/components/ViewMore";
@@ -29,6 +29,8 @@ const Dashboard = () => {
     { src: "/bg.avif", alt: "Slide 2" },
     { src: "/ichigo.jpg", alt: "Slide 3" },
   ];
+
+  const router = useRouter();
 
   const getEmbedUrl = (url) => {
     if (!url || typeof url !== 'string') {
@@ -118,8 +120,7 @@ const Dashboard = () => {
 
   const handleLearnMore = (sportName) => {
     if (isClient) {
-      const router = useRouter();
-      router.push(`/sports/${sportName}`);
+      router.push(`/info/${sportName}`);
     }
   };
 
@@ -260,10 +261,12 @@ const Dashboard = () => {
                 alt={athlete.name}
                 width={200}
                 height={200}
-                className="rounded-full mx-auto mb-4"
+                className="rounded-full mx-auto mb-4 cursor-pointer"
+                onClick={()=>router.push(`/athletes/${athlete.AthleteID}`)}
               />
+              {console.log(athlete)}
               <h3 className="text-xl font-bold text-white">{athlete.Name}</h3>
-              <p className="text-gray-400">{athlete.sport}</p>
+              <p className="text-gray-400">{athlete.sports}</p>
             </div>
           ))}
         </div>
@@ -279,16 +282,17 @@ const Dashboard = () => {
         <h2 className="text-3xl font-bold text-center text-white mb-6">Coaches</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
           {coachesData.slice(0, visibleCoaches).map((coach, index) => (
-            <div key={index} className="bg-gray-700 p-6 rounded-lg shadow-md text-center">
+            <div key={coach.CoachID} className="bg-gray-700 p-6 rounded-lg shadow-md text-center">
               <Image
                 src={imageData[`${coach.AthleteID}_${coach.profilePicture}`]?imageData[`${coach.AthleteID}_${coach.profilePicture}`]:'/logo.png'}
                 alt={coach.name}
                 width={200}
                 height={200}
-                className="rounded-full mx-auto mb-4"
+                className="rounded-full mx-auto mb-4 cursor-pointer"
+                onClick={()=>router.push(`/coach/${coach.Email}`)}
               />
               <h3 className="text-xl font-bold text-white">{coach.Name}</h3>
-              <p className="text-gray-400">{coach.Specialization}</p>
+              <p className="text-gray-400 cursor-pointer" onClick={()=>router.push(`/info/${coach.Specialization}`)}>{coach.Specialization}</p>
             </div>
           ))}
         </div>

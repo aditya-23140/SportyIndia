@@ -49,11 +49,11 @@ const sportyIndia = () => {
     setIsNavOpen(!isNavOpen);
   };
 
-  if(loading) {
-    return(
-    <div className="min-h-screen flex flex-col text-white relative overflow-hidden">
-      <Loader/>
-    </div>
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col text-white relative overflow-hidden">
+        <Loader />
+      </div>
     )
   }
 
@@ -90,9 +90,12 @@ const sportyIndia = () => {
           </nav>
         </div>
         <div className="hidden md:flex space-x-4">
-          <button className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-lg transition duration-200 transform hover:scale-105">
-            + Admin
-          </button>
+
+          <Link href="/fund">
+            <button className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-lg transition duration-200 transform hover:scale-105">
+              + Sponsor
+            </button>
+          </Link>
           {!userInfoExists ? (<button className="border border-white hover:border-blue-500 hover:text-blue-500 text-white py-2 px-4 rounded-lg transition duration-200 transform hover:scale-105">
             <Link href="/login" className="text-white hover:text-blue-500 transition duration-200">
               Sign In or Create Account

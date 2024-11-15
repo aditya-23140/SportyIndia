@@ -5,7 +5,11 @@ export async function GET(req) {
   const connection = await createConnection();
 
   try {
-    const [rows] = await connection.execute('SELECT * FROM athlete');
+    const [rows] = await connection.execute(`SELECT athlete.*, GROUP_CONCAT(sport.Name) AS sports
+      FROM athlete
+      LEFT JOIN plays ON athlete.AthleteID = plays.AthleteID
+      LEFT JOIN sport ON plays.SportID = sport.SportID
+      GROUP BY athlete.AthleteID`);
     return NextResponse.json(rows, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch athlete' }, { status: 500 });

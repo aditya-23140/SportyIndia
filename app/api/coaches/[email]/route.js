@@ -12,7 +12,10 @@ export async function GET(request, { params }) {
     const connection = await createConnection();
 
     const [coachRows] = await connection.execute(`
-      SELECT CoachID, Specialization FROM coach WHERE Email = ?
+      SELECT coach.CoachID, coach.Name, coach.ContactNum, coach.Email, specialization.Specialization 
+      FROM coach
+      LEFT JOIN specialization ON coach.CoachID = specialization.CoachID
+      WHERE coach.Email = ?;
     `, [email]);
 
     if (coachRows.length === 0) {
@@ -45,7 +48,6 @@ export async function GET(request, { params }) {
         p.Performance, 
         a.Name AS AthleteName, 
         a.DOB, 
-        a.Gender, 
         a.ContactNum, 
         a.Email AS AthleteEmail, 
         a.Address
@@ -73,7 +75,6 @@ export async function GET(request, { params }) {
         AthleteName: player.AthleteName,
         SportName: player.SportName,
         Age: player.age,
-        Gender: player.Gender,
         ContactNum: player.ContactNum,
         AthleteEmail: player.AthleteEmail,
         Address: player.Address,

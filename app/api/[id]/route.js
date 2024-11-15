@@ -99,7 +99,12 @@ export async function POST(request, { params }) {
             }
 
             const coachResult = await db.query(`
-                SELECT CoachID FROM coach WHERE Name = ? AND Specialization = ?
+                SELECT 
+                coach.CoachID 
+                FROM coach
+                JOIN specialization ON coach.CoachID = specialization.CoachID
+                WHERE coach.Name = ? AND specialization.Specialization = ?;
+
             `, [coachName, coachSpecialization]);
             if (coachResult.length === 0) {
                 return NextResponse.json({ error: "Coach with the given name and specialization not found" }, { status: 404 });
@@ -173,9 +178,13 @@ export async function POST(request, { params }) {
             const { Name, ContactNum, Email } = athleteData[0];
 
             const result = await db.query(`
-                INSERT INTO coach (Name, Specialization, ContactNum, Email) 
+                INSERT IGNORE INTO coach (CoachID, Name, ContactNum, Email) 
                 VALUES (?, ?, ?, ?)
-            `, [Name, specialization, ContactNum, Email]);
+            `, [id,Name, ContactNum, Email]);
+            await db.query(`
+                INSERT INTO specialization (CoachID, Specialization) 
+                VALUES (?, ?)
+            `, [id, specialization]);
 
             if (result.affectedRows === 0) {
                 return NextResponse.json({ error: "Failed to add the athlete as a coach" }, { status: 500 });

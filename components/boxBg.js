@@ -1,6 +1,6 @@
 export default function BoxBg ()  {
   return (
-    <div className="z-10">
+    <div>
       <ul className="circles">
         <li></li><li></li><li></li><li></li><li></li>
         <li></li><li></li><li></li><li></li><li></li>

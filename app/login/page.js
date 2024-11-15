@@ -66,7 +66,7 @@ const LoginSignup = () => {
         };
         localStorage.setItem("loginInfo", JSON.stringify(loginInfo));
         
-        router.push("/user");
+        router.push("/dashboard");
       } else {
         setErrorMessage(result.message || "An error occurred. Please try again.");
       }

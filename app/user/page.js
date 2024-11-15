@@ -347,6 +347,7 @@ const User = () => {
           setVideoUrl={setVideoUrl}
           handleAddUrl={handleAddUrl}
           handleDelete={handleDelete}
+          shouldModify={true}
         />
   
         <div className="w-full md:w-3/4 bg-gray-800 p-6 rounded-lg shadow-lg">
@@ -411,6 +412,7 @@ const User = () => {
             setAddCoachSpecialization={setaddCoachSpecialization}
             handleAddCoach={handleAddCoach}
             handleDelete={handleDelete}
+            shouldModify={true}
           />
 
 
@@ -422,6 +424,7 @@ const User = () => {
             setNewAchievement={setNewAchievement}
             handleAddAchievement={handleAddAchievement}
             handleDelete={handleDelete}
+            shouldModify={true}
           />
 
           <SportList
@@ -432,11 +435,13 @@ const User = () => {
             setIsAddSportModalOpen={setIsAddSportModalOpen}
             newSport={newSport}
             setNewSport={setNewSport}
+            shouldModify={true}
           />
 
           <ActivityList
             events={events}
             handleDelete={handleDelete}
+            shouldModify={true}
           />
 
         </div>

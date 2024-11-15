@@ -4,10 +4,12 @@ import { FaUsers, FaCheckCircle, FaTasks, FaRocket, FaBars, FaTimes, FaUser } fr
 import { motion } from "framer-motion";
 import Footer from "../../components/footer";
 import Link from "next/link";
+import Loader from "@/components/Loader";
 
 const sportyIndia = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [userInfoExists, setUserInfoExists] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [stats, setStats] = useState({
     postsCount: 0,
@@ -34,6 +36,8 @@ const sportyIndia = () => {
         }
       } catch (error) {
         console.error('Error fetching stats:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -44,6 +48,14 @@ const sportyIndia = () => {
   const toggleNav = () => {
     setIsNavOpen(!isNavOpen);
   };
+
+  if(loading) {
+    return(
+    <div className="min-h-screen flex flex-col text-white relative overflow-hidden">
+      <Loader/>
+    </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex flex-col text-white relative overflow-hidden">

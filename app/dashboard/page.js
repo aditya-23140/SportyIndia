@@ -6,6 +6,8 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from 'next/router';
 import fetchImageData from "@/utils/fetchImageData";
+import Loader from "@/components/Loader";
+import ViewMore from "@/components/ViewMore";
 
 const Dashboard = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -14,6 +16,7 @@ const Dashboard = () => {
   const [athletesData, setAthletesData] = useState([]);
   const [recentVideos, setRecentVideos] = useState([]);
   const [isClient, setIsClient] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [visibleSports, setVisibleSports] = useState(8);
   const [visibleCoaches, setVisibleCoaches] = useState(8);
@@ -47,7 +50,7 @@ const Dashboard = () => {
       return { embedUrl: `https://www.instagram.com/p/${reelId}/embed`, platform: 'instagram' };
     }
 
-    return null; 
+    return null;
   };
 
   const fetchSportsData = async () => {
@@ -97,11 +100,11 @@ const Dashboard = () => {
     fetchRecentVideos();
 
     setIsClient(true);
-
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
     }, 2000);
-
+    
+    setLoading(false);
     return () => clearInterval(interval);
   }, []);
 
@@ -140,22 +143,32 @@ const Dashboard = () => {
   const hasMoreCoaches = visibleCoaches < coachesData.length;
   const hasMoreAthletes = visibleAthletes < athletesData.length;
   const hasMoreVideos = visibleVideos < recentVideos.length;
-  
+
   useEffect(() => {
     if (athletesData && athletesData.length > 0) {
       athletesData.forEach((athlete) => {
         if (athlete.profilePicture) {
-          fetchImageData(athlete.AthleteID, athlete.profilePicture,imageData,setImageData);
+          fetchImageData(athlete.AthleteID, athlete.profilePicture, imageData, setImageData);
         }
       });
     }
-  }, [athletesData]);  
+  }, [athletesData]);
+
+  if (loading) {
+    return (
+      <div className="bg-gray-900 text-white">
+        <Navbar/>
+        <Loader />
+        <Footer/>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-900 text-white">
       <Navbar />
 
-      {/* Slider Section */} 
+      {/* Slider Section */}
       <div className="relative w-full bg-gray-800 z-0">
         <div className="relative h-72 overflow-hidden md:h-96 z-0">
           <AnimatePresence>
@@ -230,12 +243,9 @@ const Dashboard = () => {
           })}
         </div>
         {hasMoreVideos && (
-          <button
-            onClick={handleViewMoreVideos}
-            className="mt-4 inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            View More
-          </button>
+          <div onClick={handleViewMoreVideos} className="w-full flex justify-center">
+            <ViewMore />
+          </div>
         )}
       </div>
 
@@ -246,7 +256,7 @@ const Dashboard = () => {
           {athletesData.slice(0, visibleAthletes).map((athlete, index) => (
             <div key={index} className="bg-gray-700 p-6 rounded-lg shadow-md text-center">
               <Image
-                src={imageData[`${athlete.AthleteID}_${athlete.profilePicture}`]}
+                src={imageData[`${athlete.AthleteID}_${athlete.profilePicture}`]?imageData[`${athlete.AthleteID}_${athlete.profilePicture}`]:'/logo.png'}
                 alt={athlete.name}
                 width={200}
                 height={200}
@@ -258,12 +268,9 @@ const Dashboard = () => {
           ))}
         </div>
         {hasMoreAthletes && (
-          <button
-            onClick={handleViewMoreAthletes}
-            className="mt-4 inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            View More
-          </button>
+          <div onClick={handleViewMoreAthletes} className="w-full flex justify-center">
+            <ViewMore />
+          </div>
         )}
       </div>
 
@@ -273,9 +280,8 @@ const Dashboard = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
           {coachesData.slice(0, visibleCoaches).map((coach, index) => (
             <div key={index} className="bg-gray-700 p-6 rounded-lg shadow-md text-center">
-              {console.log(coach) }
               <Image
-                src={imageData[`${coach.AthleteID}_${coach.profilePicture}`]}
+                src={imageData[`${coach.AthleteID}_${coach.profilePicture}`]?imageData[`${coach.AthleteID}_${coach.profilePicture}`]:'/logo.png'}
                 alt={coach.name}
                 width={200}
                 height={200}
@@ -287,12 +293,9 @@ const Dashboard = () => {
           ))}
         </div>
         {hasMoreCoaches && (
-          <button
-            onClick={handleViewMoreCoaches}
-            className="mt-4 inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            View More
-          </button>
+          <div onClick={handleViewMoreCoaches} className="w-full flex justify-center">
+            <ViewMore />
+          </div>
         )}
       </div>
 
@@ -315,12 +318,9 @@ const Dashboard = () => {
           ))}
         </div>
         {hasMoreSports && (
-          <button
-            onClick={handleViewMoreSports}
-            className="mt-4 inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            View More
-          </button>
+          <div onClick={handleViewMoreSports} className="w-full flex justify-center">
+            <ViewMore />
+          </div>
         )}
       </div>
 

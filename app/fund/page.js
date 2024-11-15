@@ -1,5 +1,7 @@
 "use client";
 
+import Footer from "@/components/footer";
+import Navbar from "@/components/navbar";
 import React, { useState } from "react";
 
 export default function FundGeneration() {
@@ -11,7 +13,6 @@ export default function FundGeneration() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Mock function for processing the donation
     const donationData = {
       name: donorName,
       amount: amount,
@@ -25,16 +26,7 @@ export default function FundGeneration() {
 
   return (
     <div className="min-h-screen bg-[#0b101a] text-white">
-      <nav className="bg-[#0b101a] py-4 px-8">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="text-4xl font-bold text-white justify-start">
-            {/* SportyIndia Logo */}
-            <span className="text-white">Sporty</span>
-            <span className="text-[#3983fb]">india</span>
-            
-          </div>
-        </div>
-      </nav>
+      <Navbar/>
 
       <div className="flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl w-full bg-[#161b26] rounded-2xl shadow-lg p-8">
@@ -140,6 +132,7 @@ export default function FundGeneration() {
           )}
         </div>
       </div>
+      <Footer/>
     </div>
   );
 }

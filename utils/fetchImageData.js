@@ -1,4 +1,7 @@
 const fetchImageData = async (athleteId, imageId,imageData,setImageData) => {
+    const loginInfo = JSON.parse(localStorage.getItem("loginInfo"));
+    const loggedInUserId = loginInfo ? loginInfo.userId : null;
+
     try {
         const response = await fetch(`/api/images`, {
             method: 'POST',
@@ -16,6 +19,9 @@ const fetchImageData = async (athleteId, imageId,imageData,setImageData) => {
                 ...prevData,
                 [`${athleteId}_${imageId}`]: `/images/${data.imageId}.png`,
             }));
+            if(loggedInUserId && athleteId===loggedInUserId) {
+                localStorage.setItem("profilePic", data.imageId);
+              }
         }
     } catch (error) {
         console.error('Error fetching image data:', error);

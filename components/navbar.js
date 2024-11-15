@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaCog, FaUser } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { IoHelpOutline, IoHomeSharp } from "react-icons/io5";
@@ -10,10 +10,18 @@ import { MdEventAvailable } from "react-icons/md";
 
 export default function Navbar() {
   const [showDropdown, setShowDropdown] = useState(false);
+  const [profileInfo, setProfileInfo] = useState(null);
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
   };
+
+  useEffect(() => {
+    const storedProfilePic = localStorage.getItem('profilePic');
+    if (storedProfilePic) {
+      setProfileInfo(storedProfilePic);
+    }
+  }, []);
 
   return (
     <header className="flex justify-between items-center px-6 py-5 shadow-lg z-50">
@@ -39,7 +47,7 @@ export default function Navbar() {
       <div className="relative z-50">
         <button onClick={toggleDropdown} className="flex items-center space-x-2">
           <img
-            src="/logo.png"
+            src={ profileInfo ? `/images/${profileInfo}.png` : '/logo.png'}
             alt="Profile"
             className="w-10 h-10 rounded-full border-2 border-white"
           />
@@ -81,7 +89,10 @@ export default function Navbar() {
               </li> */}
               <li
                 className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2"
-                onClick={() => localStorage.removeItem("loginInfo")}
+                onClick={() => {
+                  localStorage.removeItem("loginInfo");
+                  localStorage.removeItem("profilePic");
+                }}
               >
                 <FiLogOut className="text-[22px]" />
                 <a href="/home"><span>LogOut</span></a>

@@ -11,6 +11,7 @@ import { FaInfoCircle } from "react-icons/fa";
 import { RiDashboard2Line } from "react-icons/ri";
 import { IoIosAddCircle } from "react-icons/io";
 import fetchImageData from "@/utils/fetchImageData";
+import Loader from "@/components/Loader";
 
 const User = () => {
   const [user, setUser] = useState(null);
@@ -40,7 +41,6 @@ const User = () => {
   const [updatedAddress, setUpdatedAddress] = useState('');
   const [profilePic, setProfilePic] = useState(null);
   const fileInputRef = useRef(null);
-  const [imageData, setImageData] = useState({});
 
   const fetchUserData = async (userId) => {
     try {
@@ -317,7 +317,24 @@ const User = () => {
       toast.error("An error occurred while uploading the profile picture.");
     }
   };
-  
+  const [profileInfo, setProfileInfo] = useState(null);
+  useEffect(() => {
+    const storedProfilePic = localStorage.getItem('profilePic');
+    if (storedProfilePic) {
+      setProfileInfo(storedProfilePic);
+    }
+  }, []);
+
+  if(loading) {
+    return(
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-black to-gray-900 text-white">
+      <Navbar/>
+      <Loader/>
+      <Footer/>
+    </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-black to-gray-900 text-white">
       <Navbar />
@@ -335,7 +352,7 @@ const User = () => {
         <div className="w-full md:w-3/4 bg-gray-800 p-6 rounded-lg shadow-lg">
           <div className="flex items-center mb-6 relative">
             <img
-              src='/logo.png'
+              src={ profileInfo ? `/images/${profileInfo}.png` : '/ichigo.jpg'}
               alt="Profile"
               className="rounded-full w-24 h-24 border-2 border-gray-700"
             />

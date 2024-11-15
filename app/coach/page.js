@@ -5,6 +5,8 @@ import Navbar from "../../components/navbar";
 import Footer from "../../components/footer";
 import { MdDeleteForever } from "react-icons/md";
 import { MdEditDocument } from "react-icons/md";
+import BoxBg from "@/components/boxBg";
+import Loader from "@/components/Loader";
 
 export default function CoachDashboard() {
   const [players, setPlayers] = useState([]);
@@ -138,16 +140,8 @@ export default function CoachDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0b101a] text-white">
-        <Navbar />
-        <div className="flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl w-full bg-[#161b26] rounded-2xl shadow-lg p-8">
-            <h1 className="text-3xl font-extrabold text-[#fefefe] mb-6 text-center">
-              Loading Players...
-            </h1>
-          </div>
-        </div>
-        <Footer />
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
+      <Loader/>
       </div>
     );
   }
@@ -171,7 +165,6 @@ export default function CoachDashboard() {
   return (
     <div className="min-h-screen bg-[#0b101a] text-white">
       <Navbar />
-
       <div className="flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 min-h-[79vh]">
         <div className="max-w-3xl w-full bg-[#161b26] rounded-2xl shadow-lg p-8">
           <h1 className="text-3xl font-extrabold text-[#fefefe] mb-6 text-center">

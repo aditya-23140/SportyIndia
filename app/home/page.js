@@ -5,11 +5,15 @@ import { motion } from "framer-motion";
 import Footer from "../../components/footer";
 import Link from "next/link";
 import Loader from "@/components/Loader";
+import { useRouter } from "next/navigation";
 
 const sportyIndia = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [userInfoExists, setUserInfoExists] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+  const [isSponsor, setIsSponsor] = useState(false);
 
   const [stats, setStats] = useState({
     postsCount: 0,
@@ -17,9 +21,23 @@ const sportyIndia = () => {
     eventsCount: 0,
   });
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim() === "") {
+      router.push("/dashboard");
+    } else {
+      router.push(`/info/${searchQuery}`);
+    }
+  };
+
   useEffect(() => {
     const userInfo = localStorage.getItem('loginInfo');
+    const storedSponsorLoginInfo = localStorage.getItem('sponsorLoginInfo');
+
     setUserInfoExists(!!userInfo);
+    if (storedSponsorLoginInfo) {
+      setIsSponsor(true);
+    }
 
     const fetchStats = async () => {
       try {
@@ -70,7 +88,7 @@ const sportyIndia = () => {
 
       <header className="flex justify-between items-center px-6 py-5 shadow-lg relative z-0">
         <div className="text-4xl font-bold">
-          <a href="/">Sporty<span className="text-blue-500">india</span></a>
+          <a href="/">Sporty<span className="text-blue-500">India</span></a>
         </div>
         <div className="hidden md:flex">
           <nav>
@@ -91,7 +109,7 @@ const sportyIndia = () => {
         </div>
         <div className="hidden md:flex space-x-4">
 
-          <Link href="/fund">
+          <Link href={isSponsor?'/sponsor':'/login/sponsor'}>
             <button className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-lg transition duration-200 transform hover:scale-105">
               + Sponsor
             </button>
@@ -163,8 +181,10 @@ const sportyIndia = () => {
                 type="text"
                 placeholder="Search for name, sport, ratings..."
                 className="flex-grow bg-transparent outline-none px-4 py-3 text-gray-900 rounded-l-full focus:ring-2 focus:ring-blue-500"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button className="bg-blue-500 text-white py-2 px-6 rounded-full transition hover:bg-blue-600">
+              <button className="bg-blue-500 text-white py-2 px-6 rounded-full transition hover:bg-blue-600" onClick={handleSearch}>
                 Search
               </button>
             </div>

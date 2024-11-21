@@ -22,6 +22,7 @@ const Dashboard = () => {
   const [visibleCoaches, setVisibleCoaches] = useState(8);
   const [visibleAthletes, setVisibleAthletes] = useState(8);
   const [visibleVideos, setVisibleVideos] = useState(8);
+  const [visibleInstagramVideos, setVisibleInstagramVideos] = useState(8);
   const [imageData, setImageData] = useState({});
 
   const slides = [
@@ -89,11 +90,23 @@ const Dashboard = () => {
     try {
       const response = await fetch("/api/videos");
       const data = await response.json();
-      setRecentVideos(data);
+  
+      const sortedVideos = data.sort((a, b) => {
+        const platformA = getEmbedUrl(a.URL)?.platform || "";
+        const platformB = getEmbedUrl(b.URL)?.platform || "";
+  
+        if (platformA === "youtube" && platformB === "instagram") return -1;
+        if (platformA === "instagram" && platformB === "youtube") return 1;
+  
+        return new Date(b.CreatedAt) - new Date(a.CreatedAt);
+      });
+  
+      setRecentVideos(sortedVideos);
     } catch (error) {
       console.error("Error fetching videos:", error);
     }
   };
+  
 
   useEffect(() => {
     fetchSportsData();
@@ -154,6 +167,8 @@ const Dashboard = () => {
       });
     }
   }, [athletesData]);
+
+  let showInstagram = false;
 
   if (loading) {
     return (

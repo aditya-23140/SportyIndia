@@ -14,12 +14,13 @@ export default function Navbar() {
   const [profileInfo, setProfileInfo] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isSponsor, setIsSponsor] = useState(false); 
   const router = useRouter();
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
   };
-
+ 
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim() === "") {
@@ -32,6 +33,7 @@ export default function Navbar() {
   useEffect(() => {
     const storedProfilePic = localStorage.getItem('profilePic');
     const storedLoginInfo = localStorage.getItem('loginInfo');
+    const storedSponsorLoginInfo = localStorage.getItem('sponsorLoginInfo');
     
     if (storedProfilePic) {
       setProfileInfo(storedProfilePic);
@@ -40,12 +42,19 @@ export default function Navbar() {
     if (storedLoginInfo) {
       setIsLoggedIn(true);
     }
+
+    if (storedSponsorLoginInfo) {
+      setIsLoggedIn(true);
+      setIsSponsor(true);
+    }
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("loginInfo");
     localStorage.removeItem("profilePic");
+    localStorage.removeItem("sponsorLoginInfo"); // Remove sponsor login info
     setIsLoggedIn(false);
+    setIsSponsor(false); // Reset sponsor state
     router.push("/home");
   };
 
@@ -88,31 +97,38 @@ export default function Navbar() {
             transition={{ duration: 0.3 }}
           >
             <ul className="py-2">
-                  <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
-                    <MdDashboard />
-                    <a href="/dashboard"><span>Dashboard</span></a>
-                  </li>
-                  <li className="px-4 py-2 hover:bg-gray-700 md:hidden">
-                    <input
-                      type="text"
-                      placeholder="Search..."
-                      className="w-full px-4 py-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </li>
-                  <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
-                    <MdFoodBank className="scale-[1.3]" />
-                    <a href="/resource"><span>Diet</span></a>
-                  </li>
-                  <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
-                    <MdEventAvailable className="scale-[1.3]" />
-                    <a href="/challenges"><span>Events</span></a>
-                  </li>
+              <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
+                <MdDashboard />
+                <a href="/dashboard"><span>Dashboard</span></a>
+              </li>
+              <li className="px-4 py-2 hover:bg-gray-700 md:hidden">
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className="w-full px-4 py-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </li>
+              <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
+                <MdFoodBank className="scale-[1.3]" />
+                <a href="/resource"><span>Diet</span></a>
+              </li>
+              <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
+                <MdEventAvailable className="scale-[1.3]" />
+                <a href="/challenges"><span>Events</span></a>
+              </li>
               {isLoggedIn && (
                 <>
-                  <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
-                    <FaUser />
-                    <a href="/user"><span>Profile</span></a>
-                  </li>
+                  {isSponsor ? (
+                    <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
+                      <FaUser />
+                      <a href="/sponsor"><span>Sponsor Profile</span></a>
+                    </li>
+                  ) : (
+                    <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
+                      <FaUser />
+                      <a href="/user"><span>Profile</span></a>
+                    </li>
+                  )}
                   <li
                     className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2"
                     onClick={handleLogout}
@@ -122,7 +138,6 @@ export default function Navbar() {
                   </li>
                 </>
               )}
-
               {!isLoggedIn && (
                 <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
                   <FiLogOut className="text-[22px]" />

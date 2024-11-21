@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import Image from "next/image";
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import Loader from "@/components/Loader";
 import ViewMore from "@/components/ViewMore";
 import fetchImageData from "@/utils/fetchImageData";
@@ -21,6 +21,7 @@ const SearchPage = ({ params }) => {
     const [visibleCoaches, setVisibleCoaches] = useState(8);
     const [visibleAthletes, setVisibleAthletes] = useState(8);
     const [imageData, setImageData] = useState({});
+    const router = useRouter();
 
     const fetchSearchResults = async (query) => {
         if (!query) return;
@@ -162,7 +163,7 @@ const SearchPage = ({ params }) => {
             <div className="accordion-container px-6 py-10 bg-gray-800">
                 <h2 className="text-3xl font-bold text-center text-white mb-6">Sports</h2>
                 <div className="container mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {sportsData.slice(0, visibleSports).map((sport, index) => (
+                    {sportsData.length>0?sportsData.slice(0, visibleSports).map((sport, index) => (
                         <div key={index} className="accordion-item bg-gray-700 p-6 mb-4 rounded-lg shadow-md">
                             <h3 className="text-2xl font-bold">{sport.Name}</h3>
                             <p className="text-sm text-gray-400">Category: {sport.Category}</p>
@@ -174,7 +175,7 @@ const SearchPage = ({ params }) => {
                                 Learn more
                             </button>
                         </div>
-                    ))}
+                    )):""}
                 </div>
                 {hasMoreSports && (
                     <div onClick={handleViewMoreSports} className="w-full flex justify-center">

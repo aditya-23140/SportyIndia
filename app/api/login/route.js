@@ -4,16 +4,25 @@ import { NextResponse } from "next/server";
 export async function POST(request) {
   try {
     const db = await createConnection();
-    const { email, password } = await request.json();
+    const { email, password, action } = await request.json();
 
-    const checkUserSql = "SELECT * FROM users WHERE Email = ? AND Password = ?";
-    const [user] = await db.query(checkUserSql, [email, password]);
-    console.log(user);
-    console.log(user[0]);
+    let checkUserSql;
+    let user;
+
+    if (action === "athlete") {
+      checkUserSql = "SELECT * FROM users WHERE Email = ? AND Password = ?";
+      [user] = await db.query(checkUserSql, [email, password]);
+    } else if (action === "sponsor") {
+      checkUserSql = "SELECT * FROM sponsor WHERE email = ? AND password = ?";
+      [user] = await db.query(checkUserSql, [email, password]);
+    } else {
+      return NextResponse.json({ success: false, message: "Invalid action." });
+    }
+
     if (user.length > 0) {
       return NextResponse.json({
         success: true,
-        user: user[0], 
+        user: user[0],
       });
     } else {
       return NextResponse.json({ success: false, message: "Invalid email or password." });

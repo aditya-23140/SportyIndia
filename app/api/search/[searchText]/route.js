@@ -52,9 +52,5 @@ export async function GET(req, { params }) {
   } catch (error) {
     console.error("Error during search:", error);
     return NextResponse.json({ message: "Error fetching data" }, { status: 500 });
-  } finally {
-    if (connection) {
-      connection.end();
-    }
-  }
+  } 
 }

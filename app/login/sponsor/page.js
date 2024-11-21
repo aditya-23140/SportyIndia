@@ -48,8 +48,8 @@ const LoginSignup = () => {
         return;
       }
     }
-
-    data.action = "athlete";
+    
+    data.action = "sponsor";
 
     try {
       const response = await fetch(endpoint, {
@@ -64,9 +64,9 @@ const LoginSignup = () => {
       if (result.success) {
         const loginInfo = {
           email: data.email,
-          userId: result.user.UserID,
+          userId: result.user.id,
         };
-        localStorage.setItem("loginInfo", JSON.stringify(loginInfo));
+        localStorage.setItem("sponsorLoginInfo", JSON.stringify(loginInfo));
         
         router.push("/dashboard");
       } else {
@@ -77,7 +77,7 @@ const LoginSignup = () => {
       setErrorMessage("An error occurred. Please try again.");
     }
   };
-  
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black text-white">
       <BoxBg/>
@@ -101,7 +101,7 @@ const LoginSignup = () => {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-4xl font-bold text-center mb-6">
-              {isSignUp ? "Create Account" : "Welcome Back"}
+              {isSignUp ? "Sponsor SignUp" : "Sponsor Login"}
             </h2>
             <form className="space-y-6" onSubmit={handleSubmit} autoComplete="off">
               {isSignUp && (
@@ -139,7 +139,7 @@ const LoginSignup = () => {
                   {!passVisible1 ? <IoEye className='text-3xl' /> : <IoEyeOff className='text-3xl' />}
                 </span>
               </div>
-              {isSignUp && (
+              {isSignUp && (<>
                 <div className="relative">
                   <label className="block text-sm text-gray-400">Confirm Password</label>
                   <input
@@ -153,6 +153,17 @@ const LoginSignup = () => {
                     {!passVisible2 ? <IoEye className='text-3xl' /> : <IoEyeOff className='text-3xl' />}
                   </span>
                 </div>
+                <div className="relative">
+                  <label className="block text-sm text-gray-400">Phone Number</label>
+                  <input
+                    name="contactNum"
+                    type="text"
+                    placeholder="Enter your phone number"
+                    className="w-full px-4 py-3 bg-gray-700 rounded-lg text-gray-300 outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                </>
               )}
               <button
                 type="submit"

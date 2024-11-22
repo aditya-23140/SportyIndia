@@ -1,45 +1,99 @@
 "use client";
 
-import React, { useState } from "react";
+import Footer from "@/components/footer";
+import Loader from "@/components/Loader";
+import Navbar from "@/components/navbar";
+import React, { useState, useEffect } from "react";
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
+const calculateAge = (dob) => {
+  const birthDate = new Date(dob);
+  const age = new Date().getFullYear() - birthDate.getFullYear();
+  const monthDiff = new Date().getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && new Date().getDate() < birthDate.getDate())) {
+    return age - 1;
+  }
+  return age;
+};
 
 export default function AdminDashboard() {
   const [selectedTab, setSelectedTab] = useState("athletes");
+  const [athletes, setAthletes] = useState([]);
+  const [coaches, setCoaches] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [fundings, setFundings] = useState([]);
 
-  // Sample Data
-  const athletes = [
-    { id: 1, name: "John Doe", sport: "Football", coach: "Coach A", status: "Active" },
-    { id: 2, name: "Jane Smith", sport: "Swimming", coach: "Coach B", status: "Inactive" },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const coaches = [
-    { id: 1, name: "Coach A", sport: "Football" },
-    { id: 2, name: "Coach B", sport: "Swimming" },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const athletesResponse = await fetch("/api/athletes");
+        if (!athletesResponse.ok) throw new Error("Failed to fetch athletes data.");
+        const athletesData = await athletesResponse.json();
+        setAthletes(athletesData);
 
-  const events = [
-    { id: 1, name: "National Football Championship", location: "Stadium A", date: "2024-12-15", time: "10:00 AM" },
-    { id: 2, name: "International Swimming Tournament", location: "Pool B", date: "2024-12-20", time: "2:00 PM" },
-  ];
+        const coachesResponse = await fetch("/api/coaches");
+        if (!coachesResponse.ok) throw new Error("Failed to fetch coaches data.");
+        const coachesData = await coachesResponse.json();
+        setCoaches(coachesData);
 
-  const fundings = [
-    { id: 1, name: "Event Funding", amount: 5000, for: "National Football Championship", donor: "John Doe" },
-    { id: 2, name: "Athlete Sponsorship", amount: 2000, for: "John Doe", donor: "Jane Smith" },
-  ];
+        const eventsResponse = await fetch("/api/events");
+        if (!eventsResponse.ok) throw new Error("Failed to fetch events data.");
+        const eventsData = await eventsResponse.json();
+        setEvents(eventsData);
+
+        const fundingsResponse = await fetch("/api/sponsorFund");
+        if (!fundingsResponse.ok) throw new Error("Failed to fetch fundings data.");
+        const fundingsData = await fundingsResponse.json();
+        setFundings(fundingsData.sponsors);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleTabClick = (tab) => {
+    setSelectedTab(tab);
+  };
+
+  const handleNameClick = (data, type) => {
+    if (type === "athlete") {
+      if (localStorage.getItem("loginInfo")) localStorage.removeItem("loginInfo");
+      localStorage.setItem("loginInfo", JSON.stringify({ email: data.Email, userId: data.AthleteID }));
+      window.location.href = "/user";
+    } else if (type === "sponsor") {
+      if (localStorage.getItem("sponsorLoginInfo")) localStorage.removeItem("sponsorLoginInfo");
+      localStorage.setItem("sponsorLoginInfo", JSON.stringify({ email: data.email, userId: data.id }));
+      window.location.href = "/sponsor";
+    } else if(type === "coach") {
+      if (localStorage.getItem("loginInfo")) localStorage.removeItem("loginInfo");
+      localStorage.setItem("loginInfo", JSON.stringify({ email: data.Email, userId: data.CoachID }));
+      window.location.href = "/coach";
+    }
+  };
+
+  if (loading) return <div><Loader /></div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="min-h-screen bg-[#0b101a] text-white">
-      <nav className="bg-[#0b101a] py-4 px-8">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="text-4xl font-bold text-white justify-start">
-            {/* SportyIndia Logo */}
-            <span className="text-white">Sporty</span>
-            <span className="text-[#3983fb]">india</span>
-            
-          </div>
-        </div>
-      </nav>
-
-      <div className="flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-black to-gray-900 text-white">
+      <Navbar />
+      <div className="flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 min-h-[79vh]">
         <div className="max-w-7xl w-full bg-[#161b26] rounded-2xl shadow-lg p-8">
           <h1 className="text-3xl font-extrabold text-[#fefefe] mb-6 text-center">
             Admin Dashboard
@@ -47,28 +101,34 @@ export default function AdminDashboard() {
 
           <div className="mb-6 flex justify-center space-x-6">
             <button
-              onClick={() => setSelectedTab("athletes")}
+              onClick={() => handleTabClick("athletes")}
               className={`py-2 px-6 rounded-lg ${selectedTab === "athletes" ? "bg-[#3983fb]" : "bg-[#2b2f3a]"}`}
             >
               Athletes
             </button>
             <button
-              onClick={() => setSelectedTab("coaches")}
+              onClick={() => handleTabClick("coaches")}
               className={`py-2 px-6 rounded-lg ${selectedTab === "coaches" ? "bg-[#3983fb]" : "bg-[#2b2f3a]"}`}
             >
               Coaches
             </button>
             <button
-              onClick={() => setSelectedTab("events")}
+              onClick={() => handleTabClick("events")}
               className={`py-2 px-6 rounded-lg ${selectedTab === "events" ? "bg-[#3983fb]" : "bg-[#2b2f3a]"}`}
             >
               Events
             </button>
             <button
-              onClick={() => setSelectedTab("fundings")}
+              onClick={() => handleTabClick("fundings")}
               className={`py-2 px-6 rounded-lg ${selectedTab === "fundings" ? "bg-[#3983fb]" : "bg-[#2b2f3a]"}`}
             >
               Fundings
+            </button>
+            <button
+              onClick={() => handleTabClick("sponsors")}
+              className={`py-2 px-6 rounded-lg ${selectedTab === "sponsors" ? "bg-[#3983fb]" : "bg-[#2b2f3a]"}`}
+            >
+              Sponsors
             </button>
           </div>
 
@@ -81,25 +141,26 @@ export default function AdminDashboard() {
                     <th className="py-2 px-4 text-left">ID</th>
                     <th className="py-2 px-4 text-left">Name</th>
                     <th className="py-2 px-4 text-left">Sport</th>
-                    <th className="py-2 px-4 text-left">Coach</th>
-                    <th className="py-2 px-4 text-left">Status</th>
+                    <th className="py-2 px-4 text-left">Age</th>
+                    <th className="py-2 px-4 text-left">Email</th>
+                    <th className="py-2 px-4 text-left">ContactNum</th>
                   </tr>
                 </thead>
                 <tbody>
                   {athletes.map((athlete) => (
-                    <tr key={athlete.id}>
-                      <td className="py-2 px-4">{athlete.id}</td>
-                      <td className="py-2 px-4">{athlete.name}</td>
-                      <td className="py-2 px-4">{athlete.sport}</td>
-                      <td className="py-2 px-4">{athlete.coach}</td>
-                      <td className="py-2 px-4">{athlete.status}</td>
+                    <tr key={athlete.id} className="hover:underline cursor-pointer" onClick={() => handleNameClick(athlete, "athlete")}>
+                      <td className="py-2 px-4">{athlete.AthleteID}</td>
+                      <td className="py-2 px-4">{athlete.Name}</td>
+                      <td className="py-2 px-4">{athlete.sports}</td>
+                      <td className="py-2 px-4">{calculateAge(athlete.DOB)}</td>
+                      <td className="py-2 px-4">{athlete.Email}</td>
+                      <td className="py-2 px-4">{athlete.ContactNum}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
-
           {selectedTab === "coaches" && (
             <div>
               <h2 className="text-xl font-semibold text-[#fefefe] mb-3">Coaches</h2>
@@ -108,15 +169,17 @@ export default function AdminDashboard() {
                   <tr>
                     <th className="py-2 px-4 text-left">ID</th>
                     <th className="py-2 px-4 text-left">Name</th>
-                    <th className="py-2 px-4 text-left">Sport</th>
+                    <th className="py-2 px-4 text-left">Specialization</th>
+                    <th className="py-2 px-4 text-left">Guides</th>
                   </tr>
                 </thead>
                 <tbody>
                   {coaches.map((coach) => (
-                    <tr key={coach.id}>
-                      <td className="py-2 px-4">{coach.id}</td>
-                      <td className="py-2 px-4">{coach.name}</td>
-                      <td className="py-2 px-4">{coach.sport}</td>
+                    <tr key={coach.CoachID} className="hover:underline cursor-pointer" onClick={() => handleNameClick(coach, "coach")}>
+                      <td className="py-2 px-4">{coach.CoachID}</td>
+                      <td className="py-2 px-4">{coach.Name}</td>
+                      <td className="py-2 px-4">{coach.Specialization}</td>
+                      <td className="py-2 px-4">{coach.AthleteNames}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -132,7 +195,7 @@ export default function AdminDashboard() {
                   <tr>
                     <th className="py-2 px-4 text-left">ID</th>
                     <th className="py-2 px-4 text-left">Event</th>
-                    <th className="py-2 px-4 text-left">Location</th>
+                    <th className="py-2 px-4 text-left">Venue</th>
                     <th className="py-2 px-4 text-left">Date</th>
                     <th className="py-2 px-4 text-left">Time</th>
                   </tr>
@@ -140,11 +203,11 @@ export default function AdminDashboard() {
                 <tbody>
                   {events.map((event) => (
                     <tr key={event.id}>
-                      <td className="py-2 px-4">{event.id}</td>
-                      <td className="py-2 px-4">{event.name}</td>
-                      <td className="py-2 px-4">{event.location}</td>
-                      <td className="py-2 px-4">{event.date}</td>
-                      <td className="py-2 px-4">{event.time}</td>
+                      <td className="py-2 px-4">{event.EventID}</td>
+                      <td className="py-2 px-4">{event.EventName}</td>
+                      <td className="py-2 px-4">{event.Venue}</td>
+                      <td className="py-2 px-4">{formatDate(event.Date)}</td>
+                      <td className="py-2 px-4">{event.EventTime}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -166,13 +229,42 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {fundings.map((funding) => (
-                    <tr key={funding.id}>
-                      <td className="py-2 px-4">{funding.id}</td>
-                      <td className="py-2 px-4">{funding.name}</td>
-                      <td className="py-2 px-4">{funding.amount}</td>
-                      <td className="py-2 px-4">{funding.for}</td>
-                      <td className="py-2 px-4">{funding.donor}</td>
+                  {fundings.map((funding, index) => (
+                    <>
+                      {funding.sponsoredItems.map((items, index) => (
+                        <tr key={index}>
+                          <td className="py-2 px-4">{items.id}</td>
+                          <td className="py-2 px-4">{items.funding_type}</td>
+                          <td className="py-2 px-4">{items.sponsor_amount}</td>
+                          <td className="py-2 px-4">{items.details.Name || items.details.EventName}</td>
+                          <td className="py-2 px-4">{items.name}</td>
+                        </tr>
+                      ))}
+                    </>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {selectedTab === "sponsors" && (
+            <div>
+              <h2 className="text-xl font-semibold text-[#fefefe] mb-3">Sponsors</h2>
+              <table className="min-w-full table-auto text-[#d1d5db]">
+                <thead>
+                  <tr>
+                    <th className="py-2 px-4 text-left">ID</th>
+                    <th className="py-2 px-4 text-left">Name</th>
+                    <th className="py-2 px-4 text-left">Email</th>
+                    <th className="py-2 px-4 text-left">ContactNum</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {fundings.map((sponsor, index) => (
+                    <tr key={index} className="hover:underline cursor-pointer" onClick={() => handleNameClick(sponsor.sponsor, "sponsor")}>
+                      <td className="py-2 px-4">{sponsor.sponsor.id}</td>
+                      <td className="py-2 px-4">{sponsor.sponsor.name}</td>
+                      <td className="py-2 px-4">{sponsor.sponsor.email}</td>
+                      <td className="py-2 px-4">{sponsor.sponsor.contactNum}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -181,6 +273,7 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

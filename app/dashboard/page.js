@@ -8,28 +8,22 @@ import { useRouter } from 'next/navigation';
 import fetchImageData from "@/utils/fetchImageData";
 import Loader from "@/components/Loader";
 import ViewMore from "@/components/ViewMore";
+import Carousel from "@/components/Carousel";
 
 const Dashboard = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [sportsData, setSportsData] = useState([]);
   const [coachesData, setCoachesData] = useState([]);
   const [athletesData, setAthletesData] = useState([]);
   const [recentVideos, setRecentVideos] = useState([]);
   const [isClient, setIsClient] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [event, setEvent] = useState([]);
 
   const [visibleSports, setVisibleSports] = useState(8);
   const [visibleCoaches, setVisibleCoaches] = useState(8);
   const [visibleAthletes, setVisibleAthletes] = useState(8);
   const [visibleVideos, setVisibleVideos] = useState(8);
-  const [visibleInstagramVideos, setVisibleInstagramVideos] = useState(8);
   const [imageData, setImageData] = useState({});
-
-  const slides = [
-    { src: "/ichigo.jpg", alt: "Slide 1" },
-    { src: "/bg.avif", alt: "Slide 2" },
-    { src: "/ichigo.jpg", alt: "Slide 3" },
-  ];
 
   const router = useRouter();
 
@@ -106,30 +100,29 @@ const Dashboard = () => {
       console.error("Error fetching videos:", error);
     }
   };
-  
+
+  const fetchEvents = async () => {
+    try {
+      const response = await fetch("/api/events");
+      const data = await response.json();
+      setEvent(data);
+    } catch (error) {
+      console.error("Error fetching coaches data:", error);
+    }
+  }
 
   useEffect(() => {
     fetchSportsData();
     fetchCoachesData();
     fetchAthletesData();
     fetchRecentVideos();
+    fetchEvents();
 
     setIsClient(true);
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-    }, 2000);
-    
     setLoading(false);
-    return () => clearInterval(interval);
+    return;
   }, []);
 
-  const handlePrev = () => {
-    setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-  };
 
   const handleLearnMore = (sportName) => {
     if (isClient) {
@@ -184,42 +177,9 @@ const Dashboard = () => {
     <div className="bg-gray-900 text-white">
       <Navbar />
 
-      {/* Slider Section */}
-      <div className="relative w-full bg-gray-800 z-0">
-        <div className="relative h-72 overflow-hidden md:h-96 z-0">
-          <AnimatePresence>
-            {slides.map((slide, index) => (
-              index === currentSlide && (
-                <motion.div
-                  key={index}
-                  className="absolute w-full h-full"
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 50 }}
-                  transition={{ duration: 0.7, ease: "easeInOut" }}
-                >
-                  <Image
-                    src={slide.src}
-                    alt={slide.alt}
-                    layout="fill"
-                    className="object-cover"
-                  />
-                </motion.div>
-              )
-            ))}
-          </AnimatePresence>
-          <div className="absolute z-30 bottom-5 left-1/2 transform -translate-x-1/2 space-x-3">
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                type="button"
-                className={`w-3 h-3 rounded-full ${index === currentSlide ? "bg-blue-600" : "bg-gray-300"}`}
-                onClick={() => setCurrentSlide(index)}
-              ></button>
-            ))}
-          </div>
-        </div>
-      </div>
+      <Carousel 
+      events={event}
+      />
 
       {/* Recent Videos Section */}
       <div className="px-6 py-10">
@@ -279,7 +239,6 @@ const Dashboard = () => {
                 className="rounded-full mx-auto mb-4 cursor-pointer"
                 onClick={()=>router.push(`/athletes/${athlete.AthleteID}`)}
               />
-              {console.log(athlete)}
               <h3 className="text-xl font-bold text-white">{athlete.Name}</h3>
               <p className="text-gray-400">{athlete.sports}</p>
             </div>

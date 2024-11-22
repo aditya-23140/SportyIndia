@@ -8,6 +8,15 @@ export default function Challenges() {
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [loginInfo, setLoginInfo] = useState({ email: "", userId: "" });
+  const [newEvent, setNewEvent] = useState({
+    EventName: "",
+    Date: "",
+    Venue: "",
+    Description: "",
+    EventTime: "",
+    EventImage: "",
+  });
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -40,6 +49,11 @@ export default function Challenges() {
     };
 
     fetchEvents();
+
+    const storedLoginInfo = JSON.parse(localStorage.getItem("loginInfo"));
+    if (storedLoginInfo) {
+      setLoginInfo(storedLoginInfo);
+    }
   }, []);
 
   const handleParticipation = (event) => {
@@ -50,13 +64,68 @@ export default function Challenges() {
     return `https://${eventName.replace(/\s+/g, '')}.com`;
   };
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setNewEvent((prevEvent) => ({
+      ...prevEvent,
+      [name]: value,
+    }));
+  };
+
+  const handleAddEvent = async () => {
+    if (!newEvent.EventName || !newEvent.Date || !newEvent.Venue || !newEvent.Description || !newEvent.EventTime || !newEvent.EventImage) {
+      alert("Please fill in all fields to add the event.");
+      return;
+    }
+
+    try {
+      console.log(loginInfo.email)
+      const response = await fetch("/api/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          coachEmail: loginInfo.email,
+          EventID: newEvent.EventID,
+          EventName: newEvent.EventName,
+          Date: newEvent.Date,
+          Venue: newEvent.Venue,
+          Description: newEvent.Description,
+          EventTime: newEvent.EventTime,
+          EventImage: newEvent.EventImage,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add event");
+      }
+
+      alert("Event added successfully!");
+      setNewEvent({
+        EventName: "",
+        Date: "",
+        Venue: "",
+        Description: "",
+        EventTime: "",
+        EventImage: "",
+      });
+    } catch (error) {
+      console.error("Error adding event:", error);
+      alert("Error adding event.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0b101a] text-white">
       <Navbar />
 
       <div className="flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 min-h-[79vh]">
         <div className="max-w-3xl w-full bg-[#161b26] rounded-2xl shadow-lg p-8">
-          <h1 className="text-3xl font-extrabold text-[#fefefe] mb-6 text-center">Contests</h1>
+          <h1 className="text-3xl font-extrabold text-[#fefefe] mb-6 text-center">Events</h1>
+
+
+
           {upcomingEvents.length > 0 && (
             <div>
               <h2 className="text-2xl font-semibold text-[#fefefe] mb-4">Upcoming Contests</h2>
@@ -139,7 +208,63 @@ export default function Challenges() {
               </table>
             </div>
           )}
-          
+          {loginInfo ? <div>
+            <h2 className="text-2xl font-semibold text-[#fefefe] mb-4">Add New Event </h2>
+            <div className="mb-4">
+              <input
+                type="text"
+                name="EventName"
+                value={newEvent.EventName}
+                onChange={handleChange}
+                placeholder="Event Name"
+                className="w-full p-2 mb-2 bg-[#2b2f3a] rounded-md text-white"
+              />
+              <input
+                type="text"
+                name="Venue"
+                value={newEvent.Venue}
+                onChange={handleChange}
+                placeholder="Venue"
+                className="w-full p-2 mb-2 bg-[#2b2f3a] rounded-md text-white"
+              />
+              <input
+                type="date"
+                name="Date"
+                value={newEvent.Date}
+                onChange={handleChange}
+                className="w-full p-2 mb-2 bg-[#2b2f3a] rounded-md text-white"
+              />
+              <input
+                type="time"
+                name="EventTime"
+                value={newEvent.EventTime}
+                onChange={handleChange}
+                className="w-full p-2 mb-2 bg-[#2b2f3a] rounded-md text-white"
+              />
+              <textarea
+                name="Description"
+                value={newEvent.Description}
+                onChange={handleChange}
+                placeholder="Event Description"
+                className="w-full p-2 mb-2 bg-[#2b2f3a] rounded-md text-white"
+              />
+              <input
+                type="text"
+                name="EventImage"
+                value={newEvent.EventImage}
+                onChange={handleChange}
+                placeholder="Event Image URL"
+                className="w-full p-2 mb-4 bg-[#2b2f3a] rounded-md text-white"
+              />
+              <button
+                onClick={handleAddEvent}
+                className="bg-[#3983fb] text-white px-4 py-2 rounded-md"
+              >
+                Add Event
+              </button>
+            </div>
+          </div> : <></>}
+
         </div>
       </div>
 

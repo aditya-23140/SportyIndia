@@ -24,6 +24,17 @@ export async function POST(request) {
         success: true,
         user: user[0],
       });
+    }
+
+    checkUserSql = "SELECT * FROM admin WHERE email = ? AND password = ?";
+    [user] = await db.query(checkUserSql, [email, password]);
+
+    if (user.length > 0) {
+      return NextResponse.json({
+        success: true,
+        user: user[0],
+        role: 'admin',
+      });
     } else {
       return NextResponse.json({ success: false, message: "Invalid email or password." });
     }

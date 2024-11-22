@@ -315,35 +315,35 @@ export async function PUT(request, { params }) {
             return NextResponse.json({ error: "Athlete not found or no changes made" }, { status: 404 });
         }
 
-        if (email) {
+        if (email || name) {
             const updateUserSql = `
                 UPDATE users
-                SET Email = ?
+                SET ${email ? "Email = ?" : ""} ${email && name ? ", " : ""} ${name ? "FullName = ?" : ""}
                 WHERE UserID = ?
             `;
-            const updateUserValues = [email || '', id];
+            const updateUserValues = [email || '', name || '', id].filter(Boolean); 
             const updateUserResult = await db.query(updateUserSql, updateUserValues);
 
             if (updateUserResult.affectedRows === 0) {
                 console.error(`User with UserID ${id} not found or no changes made.`);
             }
         }
-
-        if (name) {
-            const updateUserSql = `
-                UPDATE users
-                SET FullName = ?
-                WHERE UserID = ?
+        
+        if (email || name || contactNum) {
+            const updateCoachSql = `
+                UPDATE coach
+                SET ${email ? "Email = ?" : ""} ${email && name ? ", " : ""} ${name ? "Name = ?" : ""} ${email && contactNum ? ", " : ""} ${contactNum ? "ContactNum = ?" : ""}
+                WHERE CoachID = ?
             `;
-            const updateUserValues = [name || '', id];
-            const updateUserResult = await db.query(updateUserSql, updateUserValues);
+            const updateCoachValues = [email || '', name || '', contactNum || '', id].filter(Boolean);
+            const updateCoachResult = await db.query(updateCoachSql, updateCoachValues);
 
-            if (updateUserResult.affectedRows === 0) {
-                console.error(`User with UserID ${id} not found or no changes made.`);
+            if (updateCoachResult.affectedRows === 0) {
+                console.error(`Coach with CoachID ${id} not found or no changes made.`);
             }
         }
 
-        return NextResponse.json({ success: true, message: "Athlete and user information updated successfully" }, { status: 200 });
+        return NextResponse.json({ success: true, message: "Athlete, user, and coach information updated successfully" }, { status: 200 });
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: error.message }, { status: 500 });

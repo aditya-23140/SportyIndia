@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaCog, FaUser } from "react-icons/fa";
@@ -8,19 +8,23 @@ import { MdDashboard } from "react-icons/md";
 import { FiLogOut } from "react-icons/fi";
 import { MdFoodBank } from "react-icons/md";
 import { MdEventAvailable } from "react-icons/md";
+import { MdAdminPanelSettings } from "react-icons/md";
 
 export default function Navbar() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [profileInfo, setProfileInfo] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isSponsor, setIsSponsor] = useState(false); 
+  const [isSponsor, setIsSponsor] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [hasUserLogin, setHasUserLogin] = useState(false);
+  const [hasSponsorLogin, setHasSponsorLogin] = useState(false);
   const router = useRouter();
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
   };
- 
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim() === "") {
@@ -34,27 +38,43 @@ export default function Navbar() {
     const storedProfilePic = localStorage.getItem('profilePic');
     const storedLoginInfo = localStorage.getItem('loginInfo');
     const storedSponsorLoginInfo = localStorage.getItem('sponsorLoginInfo');
-    
+    const storedAdminLoginInfo = localStorage.getItem('AdminLogin');
+
     if (storedProfilePic) {
       setProfileInfo(storedProfilePic);
     }
 
     if (storedLoginInfo) {
       setIsLoggedIn(true);
+      setHasUserLogin(true);
     }
 
     if (storedSponsorLoginInfo) {
       setIsLoggedIn(true);
       setIsSponsor(true);
+      setHasSponsorLogin(true);
+    }
+
+    if (storedAdminLoginInfo) {
+      setIsLoggedIn(true);
+      setIsAdmin(true);
     }
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("loginInfo");
-    localStorage.removeItem("profilePic");
-    localStorage.removeItem("sponsorLoginInfo"); // Remove sponsor login info
+  const handleLogout = (role) => {
+    if (role === 'admin') {
+      localStorage.removeItem("AdminLoginInfo");
+      localStorage.removeItem("sponsorLoginInfo");
+      localStorage.removeItem("loginInfo");
+    } else if (role === 'sponsor') {
+      localStorage.removeItem("sponsorLoginInfo");
+    } else if (role === 'user') {
+      localStorage.removeItem("loginInfo");
+      localStorage.removeItem("profilePic");
+    }
     setIsLoggedIn(false);
-    setIsSponsor(false); // Reset sponsor state
+    setIsSponsor(false);
+    setIsAdmin(false);
     router.push("/home");
   };
 
@@ -118,23 +138,69 @@ export default function Navbar() {
               </li>
               {isLoggedIn && (
                 <>
-                  {isSponsor ? (
+                  {hasUserLogin && (
                     <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
                       <FaUser />
-                      <a href="/sponsor"><span>Sponsor Profile</span></a>
+                      <a href="/user"><span>Athlete Profile</span></a>
                     </li>
-                  ) : (
+                  )}
+                  {hasSponsorLogin && (
                     <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
-                      <FaUser />
-                      <a href="/user"><span>Profile</span></a>
+                    <FaUser />
+                    <a href="/sponsor"><span>Sponsor Profile</span></a>
+                  </li>
+                  )}
+
+                  {hasUserLogin && !isAdmin && (
+                    <li
+                      className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2"
+                      onClick={() => handleLogout('user')}
+                    >
+                      <FiLogOut className="text-[22px]" />
+                      <a href="/home"><span>LogOut User</span></a>
+                    </li>
+                  )}
+                  {hasSponsorLogin && !isAdmin && (
+                    <li
+                      className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2"
+                      onClick={() => handleLogout('sponsor')}
+                    >
+                      <FiLogOut className="text-[22px]" />
+                      <a href="/home"><span>LogOut Sponsor</span></a>
+                    </li>
+                  )}
+                </>
+              )}
+              {isAdmin && (
+                <>
+                  <li className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2">
+                    <MdAdminPanelSettings className="text-[25px]" />
+                    <a href="/admin"><span>Admin Panel</span></a>
+                  </li>
+                  {hasUserLogin && (
+                    <li
+                      className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2"
+                      onClick={() => handleLogout('user')}
+                    >
+                      <FiLogOut className="text-[22px]" />
+                      <a href="/home"><span>LogOut User</span></a>
+                    </li>
+                  )}
+                  {hasSponsorLogin && (
+                    <li
+                      className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2"
+                      onClick={() => handleLogout('sponsor')}
+                    >
+                      <FiLogOut className="text-[22px]" />
+                      <a href="/home"><span>LogOut Sponsor</span></a>
                     </li>
                   )}
                   <li
                     className="px-4 py-2 hover:bg-gray-700 flex items-center space-x-2"
-                    onClick={handleLogout}
+                    onClick={() => handleLogout('admin')}
                   >
                     <FiLogOut className="text-[22px]" />
-                    <a href="/home"><span>LogOut</span></a>
+                    <a href="/home"><span>LogOut Admin</span></a>
                   </li>
                 </>
               )}

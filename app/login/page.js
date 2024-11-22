@@ -64,11 +64,16 @@ const LoginSignup = () => {
       if (result.success) {
         const loginInfo = {
           email: data.email,
-          userId: result.user.UserID,
+          userId: (result.user.UserID || result.user.admin_id),
         };
-        localStorage.setItem("loginInfo", JSON.stringify(loginInfo));
-        
-        router.push("/dashboard");
+
+        if (result.role && result.role === "admin") {
+          localStorage.setItem("AdminLogin", JSON.stringify(loginInfo));
+          router.push("/admin");
+        } else {
+          localStorage.setItem("loginInfo", JSON.stringify(loginInfo));
+          router.push("/dashboard");
+        }
       } else {
         setErrorMessage(result.message || "An error occurred. Please try again.");
       }
@@ -80,7 +85,7 @@ const LoginSignup = () => {
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black text-white">
-      <BoxBg/>
+      <BoxBg />
       <motion.div
         className="loginContainer bg-gray-800 p-10 rounded-lg shadow-lg w-full max-w-md relative"
         initial={{ opacity: 0, y: 20 }}
@@ -177,7 +182,6 @@ const LoginSignup = () => {
           </p>
         </div>
       </motion.div>
-      
     </div>
   );
 };

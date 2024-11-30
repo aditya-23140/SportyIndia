@@ -63,9 +63,10 @@ export default function Navbar() {
 
   const handleLogout = (role) => {
     if (role === 'admin') {
-      localStorage.removeItem("AdminLoginInfo");
+      localStorage.removeItem("AdminLogin");
       localStorage.removeItem("sponsorLoginInfo");
       localStorage.removeItem("loginInfo");
+      localStorage.removeItem("profilePic");
     } else if (role === 'sponsor') {
       localStorage.removeItem("sponsorLoginInfo");
     } else if (role === 'user') {

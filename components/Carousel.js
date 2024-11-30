@@ -99,8 +99,9 @@ export default function Carousel({ events }) {
               <p className="text-white">{event.EventTime}</p>
               <p className="text-white">{event.Description}</p>
             </div>
+            {console.log(event.EventImage)}
             <Image
-              src={event.EventImage}
+              src={event.EventImage?event.EventImage:"/event3.jpg"}
               alt={event.EventName}
               className="absolute block w-full h-full object-cover"
               width={100}

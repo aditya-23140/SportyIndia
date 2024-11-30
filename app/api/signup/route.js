@@ -18,8 +18,8 @@ export async function POST(request) {
       const [result] = await db.query(insertUserSql, [email, fullName, password]);
 
       const insertAthleteSql = `
-        INSERT INTO athlete (Name, DOB, Gender, ContactNum, Email, Address) 
-        VALUES (?, NULL, NULL, NULL, ?, NULL)
+        INSERT INTO athlete (Name, DOB, ContactNum, Email, Address) 
+        VALUES (?, NULL, NULL, ?, NULL)
       `;
       await db.query(insertAthleteSql, [fullName, email]);
 

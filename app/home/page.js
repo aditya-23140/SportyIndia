@@ -93,7 +93,7 @@ const sportyIndia = () => {
         <div className="hidden md:flex">
           <nav>
             <ul className="flex space-x-8">
-              {["athletes", "challenges", "dashboard", "resource"].map((item) => (
+              {["challenges", "dashboard", "resource"].map((item) => (
                 <li key={item}>
                   <a
                     href={"/" + item}
@@ -107,9 +107,9 @@ const sportyIndia = () => {
 
           </nav>
         </div>
-        <div className="hidden md:flex space-x-4">
+        <div className="hidden md:flex space-x-4 ">
 
-          <Link href={isSponsor?'/sponsor':'/login/sponsor'}>
+          <Link href={isSponsor ? '/sponsor' : '/login/sponsor'}>
             <button className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg shadow-lg transition duration-200 transform hover:scale-105">
               + Sponsor
             </button>
@@ -209,7 +209,6 @@ const sportyIndia = () => {
           description="Events participation"
         />
       </div>
-
       <CustomAccordion />
       <Footer />
     </div>
@@ -240,7 +239,7 @@ const CustomAccordion = () => {
   ];
 
   return (
-    <div className="mt-10 relative z-1">
+    <div className="relative z-1">
       {items.map((item, index) => (
         <div key={index} className="border-b border-gray-600">
           <button
@@ -259,6 +258,7 @@ const CustomAccordion = () => {
           )}
         </div>
       ))}
+      
     </div>
   );
 };

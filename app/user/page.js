@@ -287,6 +287,7 @@ const User = () => {
   
       reader.readAsDataURL(file);
     }
+    
   };
   
   const handleAddProfile = async () => {
@@ -353,7 +354,7 @@ const User = () => {
         <div className="w-full md:w-3/4 bg-gray-800 p-6 rounded-lg shadow-lg">
           <div className="flex items-center mb-6 relative">
             <img
-              src={ profileInfo ? `/images/${profileInfo}.png` : '/ichigo.jpg'}
+              src={ profileInfo ? `/images/${profileInfo}.png` : '/logo.png'}
               alt="Profile"
               className="rounded-full w-24 h-24 border-2 border-gray-700"
             />

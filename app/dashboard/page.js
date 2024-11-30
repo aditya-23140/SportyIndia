@@ -229,7 +229,7 @@ const Dashboard = () => {
       <div className="px-6 py-10 bg-gray-800">
         <h2 className="text-3xl font-bold text-center text-white mb-6">Athletes</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-          {athletesData.slice(0, visibleAthletes).map((athlete, index) => (
+          {athletesData.slice(0, visibleAthletes+10).map((athlete, index) => (
             <div key={index} className="bg-gray-700 p-6 rounded-lg shadow-md text-center">
               <Image
                 src={imageData[`${athlete.AthleteID}_${athlete.profilePicture}`]?imageData[`${athlete.AthleteID}_${athlete.profilePicture}`]:'/logo.png'}
@@ -244,11 +244,11 @@ const Dashboard = () => {
             </div>
           ))}
         </div>
-        {hasMoreAthletes && (
+        {/* {hasMoreAthletes && (
           <div onClick={handleViewMoreAthletes} className="w-full flex justify-center">
             <ViewMore />
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Coaches Section */}

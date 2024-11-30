@@ -61,7 +61,7 @@ export default function Challenges() {
   };
 
   const generateEventLink = (eventName) => {
-    return `https://${eventName.replace(/\s+/g, '')}.com`;
+    return `https://forms.gle/W7yM3UqLjaZTABom6`;
   };
 
   const handleChange = (e) => {
@@ -177,7 +177,7 @@ export default function Challenges() {
                   rel="noopener noreferrer"
                   className="mt-4 inline-block bg-[#3983fb] text-white px-4 py-2 rounded-md"
                 >
-                  Visit Event Page
+                  Register
                 </a>
               </div>
             </div>
